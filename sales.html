@@ -1,1 +1,182 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>বিক্রি - হিসাবের খাতা</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        :root { --primary: #6366f1; --success: #10b981; --danger: #ef4444; --warning: #f59e0b; --bg-card: #ffffff; --border-color: #e2e8f0; --shadow: 0 4px 6px -1px rgba(0,0,0,0.1); --radius: 16px; --transition: all 0.3s; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Hind Siliguri', sans-serif; }
+        body { background: #f1f5f9; padding: 20px; }
+        .container { max-width: 1000px; margin: 0 auto; }
+        .card { background: var(--bg-card); border-radius: var(--radius); padding: 20px; margin-bottom: 20px; box-shadow: var(--shadow); }
+        .form-group { margin-bottom: 16px; }
+        .form-group label { display: block; font-weight: 600; margin-bottom: 6px; }
+        .form-group input, .form-group select { width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 10px; }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        .btn { padding: 10px 20px; border: none; border-radius: 12px; font-weight: 600; cursor: pointer; transition: var(--transition); }
+        .btn-success { background: var(--success); color: white; }
+        .btn-danger { background: var(--danger); color: white; }
+        .btn-block { width: 100%; }
+        .table-container { background: var(--bg-card); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); }
+        .data-table { width: 100%; border-collapse: collapse; }
+        .data-table th { background: #f1f5f9; padding: 14px 16px; text-align: left; }
+        .data-table td { padding: 14px 16px; border-bottom: 1px solid var(--border-color); }
+        @media (max-width: 600px) { .form-row { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div style="display: flex; justify-content: space-between; margin-bottom: 16px;">
+            <h2><i class="fas fa-cash-register"></i> বিক্রি</h2>
+            <button class="btn btn-success" onclick="toggleForm()">+ নতুন বিক্রি</button>
+        </div>
 
+        <div id="formContainer" style="display: none;">
+            <div class="card">
+                <h3 style="margin-bottom: 12px;">নতুন বিক্রি</h3>
+                <form id="salesForm">
+                    <div class="form-row">
+                        <div class="form-group"><label>পণ্য</label>
+                            <select id="salesProduct" required><option value="">নির্বাচন করুন</option></select>
+                        </div>
+                        <div class="form-group"><label>পরিমাণ</label><input type="number" id="salesQty" required min="1"></div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group"><label>দাম (প্রতি)</label><input type="number" id="salesPrice" required min="0"></div>
+                        <div class="form-group"><label>পেমেন্ট</label>
+                            <select id="salesPayment"><option value="cash">হ্যান্ডক্যাশ</option><option value="bkash">বিকাশ</option><option value="due">বাকি</option></select>
+                        </div>
+                    </div>
+                    <div id="dueFields" style="display: none;">
+                        <div class="form-row">
+                            <div class="form-group"><label>ক্রেতার নাম</label><input type="text" id="salesCustomer"></div>
+                            <div class="form-group"><label>মোবাইল</label><input type="tel" id="salesMobile"></div>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-success btn-block">বিক্রি করুন</button>
+                </form>
+            </div>
+        </div>
+
+        <div class="table-container">
+            <table class="data-table">
+                <thead><tr><th>পণ্য</th><th>পরিমাণ</th><th>দাম</th><th>মোট</th><th>পেমেন্ট</th><th>সময়</th><th>অ্যাকশন</th></tr></thead>
+                <tbody id="salesTableBody"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <script src="firebase-config.js"></script>
+    <script src="shared.js"></script>
+    <script>
+        // 🔐 Security Check
+        if (!auth.currentUser) {
+            window.location.href = 'login.html';
+        }
+
+        const uid = auth.currentUser.uid;
+        let allProducts = {};
+
+        function toggleForm() {
+            const container = document.getElementById('formContainer');
+            container.style.display = container.style.display === 'none' ? 'block' : 'none';
+            if (container.style.display === 'block') loadProducts();
+        }
+
+        function loadProducts() {
+            database.ref('products/' + uid).on('value', snap => {
+                allProducts = snap.val() || {};
+                const sel = document.getElementById('salesProduct');
+                sel.innerHTML = '<option value="">নির্বাচন করুন</option>';
+                Object.values(allProducts).forEach(p => {
+                    if (p.stock > 0) {
+                        sel.innerHTML += `<option value="${p.name}" data-price="${p.salePrice}" data-stock="${p.stock}">${p.name} (${p.stock})</option>`;
+                    }
+                });
+            });
+        }
+
+        document.getElementById('salesPayment').addEventListener('change', function() {
+            document.getElementById('dueFields').style.display = this.value === 'due' ? 'block' : 'none';
+        });
+
+        // ========== Load Sales ==========
+        function loadSales() {
+            database.ref('sales/' + uid).on('value', snap => {
+                const sales = snap.val() || {};
+                const tbody = document.getElementById('salesTableBody');
+                const entries = Object.entries(sales).sort((a,b) => b[1].timestamp - a[1].timestamp);
+                if (!entries.length) {
+                    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:20px;">কোনো বিক্রি নেই</td></tr>';
+                    return;
+                }
+                tbody.innerHTML = entries.map(([id, s]) => `
+                    <tr>
+                        <td><strong>${s.productName}</strong></td>
+                        <td>${s.quantity}</td>
+                        <td>৳${s.price}</td>
+                        <td><strong>৳${s.total}</strong></td>
+                        <td><span style="color:${s.payment === 'due' ? 'var(--warning)' : 'var(--success)'};">${s.payment === 'due' ? 'বাকি' : 'পেইড'}</span></td>
+                        <td>${getBangladeshTime(s.timestamp)}</td>
+                        <td><button class="btn btn-danger btn-sm" onclick="deleteSale('${id}')"><i class="fas fa-trash"></i></button></td>
+                    </tr>
+                `).join('');
+            });
+        }
+
+        // ========== Submit Sale ==========
+        document.getElementById('salesForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const name = document.getElementById('salesProduct').value;
+            const qty = +document.getElementById('salesQty').value;
+            const price = +document.getElementById('salesPrice').value;
+            const payment = document.getElementById('salesPayment').value;
+            const customer = document.getElementById('salesCustomer').value;
+            const mobile = document.getElementById('salesMobile').value;
+            const total = qty * price;
+
+            const key = name.toLowerCase().replace(/ /g, '_');
+            const ref = database.ref('products/' + uid + '/' + key);
+            const snap = await ref.once('value');
+            const p = snap.val();
+            if (!p || p.stock < qty) {
+                showNotification('স্টক নেই', 'error');
+                return;
+            }
+
+            await database.ref('sales/' + uid).push().set({
+                productName: name, quantity: qty, price: price, total: total,
+                payment: payment, customerName: customer, customerMobile: mobile,
+                dueAmount: payment === 'due' ? total : 0,
+                timestamp: firebase.database.ServerValue.TIMESTAMP
+            });
+
+            await ref.update({ stock: p.stock - qty, sold: (p.sold || 0) + qty });
+
+            if (payment === 'due' && customer) {
+                const ckey = customer.toLowerCase().replace(/ /g, '_');
+                const cref = database.ref('customers/' + uid + '/' + ckey);
+                const csnap = await cref.once('value');
+                const c = csnap.val() || { totalDue: 0 };
+                await cref.set({ name: customer, mobile: mobile, totalDue: (c.totalDue || 0) + total });
+            }
+
+            document.getElementById('salesForm').reset();
+            document.getElementById('formContainer').style.display = 'none';
+            showNotification('বিক্রি সফল', 'success');
+        });
+
+        // ========== Delete Sale ==========
+        async function deleteSale(id) {
+            if (!confirm('ডিলিট করবেন?')) return;
+            await database.ref('sales/' + uid + '/' + id).remove();
+            showNotification('ডিলিট করা হয়েছে', 'success');
+        }
+
+        // ========== Init ==========
+        loadSales();
+    </script>
+</body>
+</html>
