@@ -1,1 +1,175 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>রিপোর্ট - হিসাবের খাতা</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root { --primary: #6366f1; --success: #10b981; --danger: #ef4444; --bg-card: #ffffff; --border-color: #e2e8f0; --shadow: 0 4px 6px -1px rgba(0,0,0,0.1); --radius: 16px; --transition: all 0.3s; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Hind Siliguri', sans-serif; }
+        body { background: #f1f5f9; padding: 20px; }
+        .container { max-width: 1000px; margin: 0 auto; }
+        .card { background: var(--bg-card); border-radius: var(--radius); padding: 20px; margin-bottom: 20px; box-shadow: var(--shadow); }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 20px; }
+        .stat-card { background: var(--bg-card); padding: 16px; border-radius: var(--radius); box-shadow: var(--shadow); text-align: center; }
+        .stat-card h4 { color: #64748b; font-size: 13px; }
+        .stat-card p { font-size: 22px; font-weight: 700; }
+        .chart-container { height: 300px; margin-top: 10px; }
+        .btn { padding: 8px 16px; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: var(--transition); }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-primary:hover { transform: translateY(-2px); }
+        @media (max-width: 600px) { .stats-grid { grid-template-columns: 1fr 1fr; } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+            <h2><i class="fas fa-chart-pie"></i> রিপোর্ট</h2>
+            <div>
+                <button class="btn btn-primary" onclick="exportPDF()"><i class="fas fa-file-pdf"></i> PDF</button>
+                <button class="btn btn-primary" onclick="exportExcel()"><i class="fas fa-file-excel"></i> Excel</button>
+            </div>
+        </div>
 
+        <div class="stats-grid" id="reportStats">
+            <div class="stat-card"><h4>মোট বিক্রি</h4><p id="rTotalSales">৳0</p></div>
+            <div class="stat-card"><h4>মোট ক্রয়</h4><p id="rTotalPurchases">৳0</p></div>
+            <div class="stat-card"><h4>মোট খরচ</h4><p id="rTotalExpenses">৳0</p></div>
+            <div class="stat-card"><h4>মোট লাভ</h4><p id="rTotalProfit">৳0</p></div>
+        </div>
+
+        <div class="card">
+            <h3>📊 মাসিক বিক্রি</h3>
+            <div class="chart-container">
+                <canvas id="salesChart"></canvas>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>📊 মাসিক লাভ</h3>
+            <div class="chart-container">
+                <canvas id="profitChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <script src="firebase-config.js"></script>
+    <script src="shared.js"></script>
+    <script>
+        // 🔐 Security Check
+        if (!auth.currentUser) {
+            window.location.href = 'login.html';
+        }
+
+        const uid = auth.currentUser.uid;
+        let salesChart, profitChart;
+
+        // ========== Load Data ==========
+        function loadReportData() {
+            let totalSales = 0, totalPurchases = 0, totalExpenses = 0;
+            const monthlySales = Array(12).fill(0);
+            const monthlyProfit = Array(12).fill(0);
+
+            database.ref('sales/' + uid).on('value', snap => {
+                const sales = snap.val() || {};
+                totalSales = 0;
+                monthlySales.fill(0);
+                Object.values(sales).forEach(s => {
+                    totalSales += s.total || 0;
+                    const d = new Date(s.timestamp);
+                    monthlySales[d.getMonth()] += s.total || 0;
+                });
+                document.getElementById('rTotalSales').textContent = '৳' + totalSales.toFixed(2);
+                updateCharts(monthlySales, monthlyProfit);
+            });
+
+            database.ref('purchases/' + uid).on('value', snap => {
+                const purchases = snap.val() || {};
+                totalPurchases = 0;
+                Object.values(purchases).forEach(p => totalPurchases += p.total || 0);
+                document.getElementById('rTotalPurchases').textContent = '৳' + totalPurchases.toFixed(2);
+            });
+
+            database.ref('expenses/' + uid).on('value', snap => {
+                const expenses = snap.val() || {};
+                totalExpenses = 0;
+                Object.values(expenses).forEach(e => totalExpenses += e.amount || 0);
+                document.getElementById('rTotalExpenses').textContent = '৳' + totalExpenses.toFixed(2);
+                const profit = totalSales - totalPurchases - totalExpenses;
+                document.getElementById('rTotalProfit').textContent = '৳' + profit.toFixed(2);
+                // Update profit chart
+                updateCharts(monthlySales, monthlyProfit);
+            });
+        }
+
+        // ========== Update Charts ==========
+        function updateCharts(salesData, profitData) {
+            const months = ['জানু', 'ফেব্রু', 'মার্চ', 'এপ্রিল', 'মে', 'জুন', 'জুলাই', 'আগস্ট', 'সেপ্ট', 'অক্টো', 'নভে', 'ডিস'];
+
+            if (salesChart) salesChart.destroy();
+            const ctx1 = document.getElementById('salesChart').getContext('2d');
+            salesChart = new Chart(ctx1, {
+                type: 'bar',
+                data: {
+                    labels: months,
+                    datasets: [{
+                        label: 'বিক্রি (৳)',
+                        data: salesData,
+                        backgroundColor: '#6366f1',
+                        borderRadius: 4
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false }
+            });
+
+            if (profitChart) profitChart.destroy();
+            const ctx2 = document.getElementById('profitChart').getContext('2d');
+            profitChart = new Chart(ctx2, {
+                type: 'line',
+                data: {
+                    labels: months,
+                    datasets: [{
+                        label: 'লাভ (৳)',
+                        data: profitData,
+                        borderColor: '#10b981',
+                        backgroundColor: 'rgba(16,185,129,0.1)',
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false }
+            });
+        }
+
+        // ========== Export Functions ==========
+        function exportPDF() {
+            const content = document.querySelector('.container').innerHTML;
+            const win = window.open('', '_blank');
+            win.document.write(`<html><head><title>রিপোর্ট</title><style>body{font-family:Arial;padding:20px;}table{width:100%;border-collapse:collapse;}th,td{border:1px solid #ddd;padding:8px;}</style></head><body>${content}<button onclick="window.print()">প্রিন্ট</button></body></html>`);
+            win.document.close();
+            showNotification('PDF প্রিন্ট খোলা হয়েছে', 'success');
+        }
+
+        function exportExcel() {
+            let csv = 'বিবরণ,পরিমাণ\n';
+            database.ref('sales/' + uid).once('value', snap => {
+                const sales = snap.val() || {};
+                Object.values(sales).forEach(s => {
+                    csv += `বিক্রি,${s.total}\n`;
+                });
+                const blob = new Blob([csv], { type: 'text/csv' });
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = 'রিপোর্ট.csv';
+                link.click();
+                showNotification('Excel রপ্তানি হয়েছে', 'success');
+            });
+        }
+
+        // ========== Init ==========
+        loadReportData();
+    </script>
+</body>
+</html>
