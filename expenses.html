@@ -1,1 +1,133 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>খরচ - হিসাবের খাতা</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        :root { --primary: #6366f1; --success: #10b981; --danger: #ef4444; --warning: #f59e0b; --bg-card: #ffffff; --border-color: #e2e8f0; --shadow: 0 4px 6px -1px rgba(0,0,0,0.1); --radius: 16px; --transition: all 0.3s; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Hind Siliguri', sans-serif; }
+        body { background: #f1f5f9; padding: 20px; }
+        .container { max-width: 1000px; margin: 0 auto; }
+        .card { background: var(--bg-card); border-radius: var(--radius); padding: 20px; margin-bottom: 20px; box-shadow: var(--shadow); }
+        .form-group { margin-bottom: 16px; }
+        .form-group label { display: block; font-weight: 600; margin-bottom: 6px; }
+        .form-group input, .form-group select { width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 10px; }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        .btn { padding: 10px 20px; border: none; border-radius: 12px; font-weight: 600; cursor: pointer; transition: var(--transition); }
+        .btn-success { background: var(--success); color: white; }
+        .btn-danger { background: var(--danger); color: white; }
+        .btn-warning { background: var(--warning); color: white; }
+        .btn-block { width: 100%; }
+        .table-container { background: var(--bg-card); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); }
+        .data-table { width: 100%; border-collapse: collapse; }
+        .data-table th { background: #f1f5f9; padding: 14px 16px; text-align: left; }
+        .data-table td { padding: 14px 16px; border-bottom: 1px solid var(--border-color); }
+        @media (max-width: 600px) { .form-row { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div style="display: flex; justify-content: space-between; margin-bottom: 16px;">
+            <h2><i class="fas fa-receipt"></i> খরচ</h2>
+            <button class="btn btn-warning" onclick="toggleForm()">+ নতুন খরচ</button>
+        </div>
 
+        <div id="formContainer" style="display: none;">
+            <div class="card">
+                <h3 style="margin-bottom: 12px;">নতুন খরচ</h3>
+                <form id="expenseForm">
+                    <div class="form-row">
+                        <div class="form-group"><label>বিবরণ</label><input type="text" id="expenseDesc" required></div>
+                        <div class="form-group"><label>পরিমাণ</label><input type="number" id="expenseAmount" required min="0"></div>
+                    </div>
+                    <div class="form-group"><label>ক্যাটাগরি</label>
+                        <select id="expenseCategory">
+                            <option value="rent">ভাড়া</option>
+                            <option value="salary">বেতন</option>
+                            <option value="utility">ইউটিলিটি</option>
+                            <option value="transport">পরিবহন</option>
+                            <option value="food">খাবার</option>
+                            <option value="other">অন্যান্য</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-success btn-block">খরচ যোগ করুন</button>
+                </form>
+            </div>
+        </div>
+
+        <div class="table-container">
+            <table class="data-table">
+                <thead><tr><th>বিবরণ</th><th>পরিমাণ</th><th>ক্যাটাগরি</th><th>সময়</th><th>অ্যাকশন</th></tr></thead>
+                <tbody id="expenseTableBody"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <script src="firebase-config.js"></script>
+    <script src="shared.js"></script>
+    <script>
+        // 🔐 Security Check
+        if (!auth.currentUser) {
+            window.location.href = 'login.html';
+        }
+
+        const uid = auth.currentUser.uid;
+
+        function toggleForm() {
+            const container = document.getElementById('formContainer');
+            container.style.display = container.style.display === 'none' ? 'block' : 'none';
+        }
+
+        // ========== Load Expenses ==========
+        function loadExpenses() {
+            database.ref('expenses/' + uid).on('value', snap => {
+                const expenses = snap.val() || {};
+                const tbody = document.getElementById('expenseTableBody');
+                const entries = Object.entries(expenses).sort((a,b) => b[1].timestamp - a[1].timestamp);
+                if (!entries.length) {
+                    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:20px;">কোনো খরচ নেই</td></tr>';
+                    return;
+                }
+                tbody.innerHTML = entries.map(([id, e]) => `
+                    <tr>
+                        <td><strong>${e.description}</strong></td>
+                        <td><strong>৳${e.amount}</strong></td>
+                        <td><span style="background:#dbeafe;padding:4px 12px;border-radius:20px;font-size:12px;">${e.category}</span></td>
+                        <td>${getBangladeshTime(e.timestamp)}</td>
+                        <td><button class="btn btn-danger btn-sm" onclick="deleteExpense('${id}')"><i class="fas fa-trash"></i></button></td>
+                    </tr>
+                `).join('');
+            });
+        }
+
+        // ========== Submit Expense ==========
+        document.getElementById('expenseForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const desc = document.getElementById('expenseDesc').value;
+            const amount = +document.getElementById('expenseAmount').value;
+            const category = document.getElementById('expenseCategory').value;
+
+            await database.ref('expenses/' + uid).push().set({
+                description: desc, amount: amount, category: category,
+                timestamp: firebase.database.ServerValue.TIMESTAMP
+            });
+
+            document.getElementById('expenseForm').reset();
+            document.getElementById('formContainer').style.display = 'none';
+            showNotification('খরচ যোগ হয়েছে', 'success');
+        });
+
+        // ========== Delete Expense ==========
+        async function deleteExpense(id) {
+            if (!confirm('ডিলিট করবেন?')) return;
+            await database.ref('expenses/' + uid + '/' + id).remove();
+            showNotification('ডিলিট করা হয়েছে', 'success');
+        }
+
+        // ========== Init ==========
+        loadExpenses();
+    </script>
+</body>
+</html>
