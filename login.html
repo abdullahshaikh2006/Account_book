@@ -9,9 +9,26 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
     <style>
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --secondary: #06b6d4;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --bg-body: #f1f5f9;
+            --bg-card: #ffffff;
+            --text-primary: #0f172a;
+            --text-secondary: #64748b;
+            --border-color: #e2e8f0;
+            --shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+            --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1);
+            --radius: 16px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Hind Siliguri', sans-serif; }
-        body { 
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        body {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
             min-height: 100vh;
             display: flex;
             align-items: center;
@@ -19,31 +36,92 @@
             padding: 20px;
         }
         .login-card {
-            background: white;
-            border-radius: 20px;
+            background: var(--bg-card);
+            border-radius: var(--radius);
             padding: 40px;
             max-width: 420px;
             width: 100%;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            box-shadow: var(--shadow-lg);
+            animation: slideUp 0.5s ease;
+        }
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
         }
         .login-logo {
             text-align: center;
-            font-size: 50px;
-            color: #667eea;
+            font-size: 48px;
+            color: var(--primary);
             margin-bottom: 10px;
         }
-        h2 { text-align: center; color: #1e293b; margin-bottom: 25px; }
-        .form-group { margin-bottom: 20px; }
-        .form-group label { display: block; font-weight: 600; color: #475569; margin-bottom: 6px; }
-        .form-group input {
-            width: 100%;
-            padding: 14px;
-            border: 2px solid #e2e8f0;
-            border-radius: 12px;
-            font-size: 16px;
-            transition: 0.3s;
+        h2 { text-align: center; color: var(--text-primary); margin-bottom: 8px; font-size: 28px; }
+        .subtitle { text-align: center; color: var(--text-secondary); margin-bottom: 25px; font-size: 14px; }
+        .form-group { margin-bottom: 18px; }
+        .form-group label { display: block; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px; font-size: 14px; }
+        .input-group {
+            position: relative;
+            display: flex;
+            align-items: center;
         }
-        .form-group input:focus { border-color: #6366f1; outline: none; box-shadow: 0 0 0 3px rgba(99,102,241,0.1); }
+        .input-group i {
+            position: absolute;
+            left: 14px;
+            color: var(--text-secondary);
+            font-size: 18px;
+        }
+        .input-group input {
+            width: 100%;
+            padding: 14px 14px 14px 44px;
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            font-size: 15px;
+            transition: var(--transition);
+            background: #f8fafc;
+            color: var(--text-primary);
+        }
+        .input-group input:focus {
+            border-color: var(--primary);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(99,102,241,0.1);
+            background: white;
+        }
+        .input-group .password-toggle {
+            position: absolute;
+            right: 14px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--text-secondary);
+            font-size: 18px;
+            transition: var(--transition);
+        }
+        .input-group .password-toggle:hover { color: var(--primary); }
+        .form-options {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+        .checkbox-label input[type="checkbox"] { accent-color: var(--primary); }
+        .forgot-password {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        .forgot-password:hover { color: var(--primary-dark); text-decoration: underline; }
         .btn {
             width: 100%;
             padding: 14px;
@@ -52,16 +130,23 @@
             font-size: 16px;
             font-weight: 600;
             cursor: pointer;
-            transition: 0.3s;
+            transition: var(--transition);
             color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            position: relative;
+            overflow: hidden;
         }
-        .btn-primary { background: #6366f1; }
-        .btn-primary:hover { background: #4f46e5; transform: translateY(-2px); }
-        .btn:disabled { opacity: 0.7; cursor: not-allowed; }
-        .error-msg { color: #ef4444; text-align: center; margin-top: 10px; display: none; }
-        .footer { text-align: center; margin-top: 20px; color: #64748b; }
-        .footer a { color: #6366f1; text-decoration: none; font-weight: 600; }
-        .footer a:hover { text-decoration: underline; }
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(99,102,241,0.4);
+        }
+        .btn:disabled { opacity: 0.7; cursor: not-allowed; transform: none !important; }
         .spinner {
             display: none;
             width: 20px;
@@ -70,88 +155,231 @@
             border-top: 3px solid white;
             border-radius: 50%;
             animation: spin 1s linear infinite;
-            margin: 0 auto;
         }
         @keyframes spin { to { transform: rotate(360deg); } }
         .btn.loading .spinner { display: inline-block; }
         .btn.loading .btn-text { display: none; }
-        @media (max-width: 480px) { .login-card { padding: 30px 20px; } }
+        .error-msg {
+            color: var(--danger);
+            text-align: center;
+            margin-top: 10px;
+            display: none;
+            font-size: 14px;
+            background: #fee2e2;
+            padding: 8px 12px;
+            border-radius: 8px;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 20px;
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+        .footer a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 600;
+        }
+        .footer a:hover { text-decoration: underline; }
+        .offline-banner {
+            background: #fef3c7;
+            color: #92400e;
+            padding: 10px 14px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+            text-align: center;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        @media (max-width: 480px) {
+            .login-card { padding: 30px 20px; }
+            .form-options { flex-direction: column; align-items: flex-start; }
+        }
     </style>
 </head>
 <body>
     <div class="login-card">
         <div class="login-logo"><i class="fas fa-store-alt"></i></div>
         <h2>লগইন করুন</h2>
-        
+        <p class="subtitle">আপনার অ্যাকাউন্টে সাইন ইন করুন</p>
+
+        <div class="offline-banner" id="offlineBanner">
+            <i class="fas fa-wifi"></i> আপনি অফলাইনে আছেন। সেভ করা তথ্য দিয়ে লগইন করুন।
+        </div>
+
         <form id="loginForm">
             <div class="form-group">
                 <label><i class="fas fa-envelope"></i> ইমেইল</label>
-                <input type="email" id="loginEmail" placeholder="your@email.com" required>
+                <div class="input-group">
+                    <i class="fas fa-envelope"></i>
+                    <input type="email" id="loginEmail" placeholder="your@email.com" required autocomplete="email">
+                </div>
             </div>
             <div class="form-group">
                 <label><i class="fas fa-lock"></i> পাসওয়ার্ড</label>
-                <input type="password" id="loginPassword" placeholder="********" required>
+                <div class="input-group">
+                    <i class="fas fa-lock"></i>
+                    <input type="password" id="loginPassword" placeholder="********" required autocomplete="current-password">
+                    <button type="button" class="password-toggle" onclick="togglePassword('loginPassword')">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                </div>
             </div>
+
+            <div class="form-options">
+                <label class="checkbox-label">
+                    <input type="checkbox" id="rememberMe" checked>
+                    আমাকে মনে রাখুন
+                </label>
+                <a class="forgot-password" onclick="showForgotPassword()">পাসওয়ার্ড ভুলে গেছেন?</a>
+            </div>
+
             <div class="error-msg" id="loginError">ভুল ইমেইল বা পাসওয়ার্ড</div>
             <button type="submit" class="btn btn-primary" id="loginBtn">
                 <span class="spinner"></span>
                 <span class="btn-text"><i class="fas fa-sign-in-alt"></i> লগইন করুন</span>
             </button>
         </form>
-        
+
+        <!-- Forgot Password Section (Hidden) -->
+        <div id="forgotPasswordSection" style="display: none; margin-top: 20px;">
+            <hr style="border: none; border-top: 1px solid var(--border-color); margin: 20px 0;">
+            <h3 style="text-align: center; margin-bottom: 15px;">পাসওয়ার্ড রিসেট</h3>
+            <form id="forgotPasswordForm">
+                <div class="form-group">
+                    <label><i class="fas fa-envelope"></i> ইমেইল</label>
+                    <div class="input-group">
+                        <i class="fas fa-envelope"></i>
+                        <input type="email" id="resetEmail" placeholder="your@email.com" required>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary" id="resetBtn" style="background: var(--warning);">
+                    <span class="spinner"></span>
+                    <span class="btn-text"><i class="fas fa-paper-plane"></i> রিসেট লিংক পাঠান</span>
+                </button>
+                <div class="error-msg" id="resetError">ইমেইল পাঠাতে সমস্যা</div>
+            </form>
+            <div style="text-align: center; margin-top: 10px;">
+                <a class="forgot-password" onclick="hideForgotPassword()">লগইনে ফিরে যান</a>
+            </div>
+        </div>
+
         <div class="footer">
             অ্যাকাউন্ট নেই? <a href="register.html">রেজিস্টার করুন</a>
         </div>
     </div>
 
+    <script src="firebase-config.js"></script>
     <script>
-        // Firebase Config
-        const firebaseConfig = {
-            apiKey: "AIzaSyB16ZrdZ2IY_R8aSZipz-O6SelEblngJLE",
-            authDomain: "marketing-calculation.firebaseapp.com",
-            databaseURL: "https://marketing-calculation-default-rtdb.firebaseio.com",
-            projectId: "marketing-calculation",
-            storageBucket: "marketing-calculation.firebasestorage.app",
-            messagingSenderId: "371475369216",
-            appId: "1:371475369216:web:3aff3d68b707f65c1e77e5"
-        };
-        firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
-        const database = firebase.database();
+        // ========== Toggle Password ==========
+        function togglePassword(inputId) {
+            const input = document.getElementById(inputId);
+            const button = input.parentElement.querySelector('.password-toggle');
+            const icon = button.querySelector('i');
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.replace('fa-eye', 'fa-eye-slash');
+            } else {
+                input.type = 'password';
+                icon.classList.replace('fa-eye-slash', 'fa-eye');
+            }
+        }
 
+        // ========== Show/Hide Forgot Password ==========
+        function showForgotPassword() {
+            document.getElementById('loginForm').style.display = 'none';
+            document.getElementById('forgotPasswordSection').style.display = 'block';
+        }
+        function hideForgotPassword() {
+            document.getElementById('forgotPasswordSection').style.display = 'none';
+            document.getElementById('loginForm').style.display = 'block';
+        }
+
+        // ========== Offline Detection ==========
+        function updateOfflineStatus() {
+            const banner = document.getElementById('offlineBanner');
+            if (!navigator.onLine) {
+                banner.style.display = 'block';
+            } else {
+                banner.style.display = 'none';
+            }
+        }
+        window.addEventListener('online', updateOfflineStatus);
+        window.addEventListener('offline', updateOfflineStatus);
+        updateOfflineStatus();
+
+        // ========== Login Form ==========
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const email = document.getElementById('loginEmail').value;
             const password = document.getElementById('loginPassword').value;
+            const rememberMe = document.getElementById('rememberMe').checked;
             const btn = document.getElementById('loginBtn');
             const error = document.getElementById('loginError');
-            
+
             btn.classList.add('loading');
             btn.disabled = true;
             error.style.display = 'none';
-            
+
             try {
-                await auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
-                const userCred = await auth.signInWithEmailAndPassword(email, password);
-                const user = userCred.user;
-                
-                const snap = await database.ref('users/' + user.uid).once('value');
-                const data = snap.val();
-                if (!data) throw new Error('User data not found');
-                
-                localStorage.setItem('userData', JSON.stringify({
+                // Offline login check
+                if (!navigator.onLine) {
+                    const users = JSON.parse(localStorage.getItem('offlineUsers') || '[]');
+                    const user = users.find(u => u.email === email);
+                    if (user && user.password === password) {
+                        localStorage.setItem('userData', JSON.stringify(user));
+                        window.location.href = user.role === 'admin' ? 'admin-dashboard.html' : 'user-dashboard.html';
+                        return;
+                    } else {
+                        throw new Error('অফলাইনে লগইন ব্যর্থ। সঠিক তথ্য দিন।');
+                    }
+                }
+
+                // Online login
+                if (rememberMe) {
+                    await auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+                } else {
+                    await auth.setPersistence(firebase.auth.Auth.Persistence.SESSION);
+                }
+
+                const userCredential = await auth.signInWithEmailAndPassword(email, password);
+                const user = userCredential.user;
+
+                const userSnapshot = await database.ref('users/' + user.uid).once('value');
+                const userData = userSnapshot.val();
+
+                if (!userData) throw new Error('User data not found');
+
+                await database.ref('users/' + user.uid + '/lastLogin').set(firebase.database.ServerValue.TIMESTAMP);
+
+                const userInfo = {
                     uid: user.uid,
                     email: user.email,
-                    name: data.name,
-                    role: data.role || 'user'
-                }));
-                
+                    name: userData.name || user.email.split('@')[0],
+                    businessName: userData.businessName || '',
+                    mobileNumber: userData.mobileNumber || '',
+                    role: userData.role || 'user',
+                    password: password
+                };
+
+                localStorage.setItem('userData', JSON.stringify(userInfo));
+
+                if (rememberMe) {
+                    const users = JSON.parse(localStorage.getItem('offlineUsers') || '[]');
+                    const idx = users.findIndex(u => u.email === email);
+                    if (idx >= 0) users[idx] = userInfo;
+                    else users.push(userInfo);
+                    localStorage.setItem('offlineUsers', JSON.stringify(users));
+                }
+
                 // Redirect based on role
-                if (data.role === 'admin') {
+                if (userData.role === 'admin') {
                     window.location.href = 'admin-dashboard.html';
                 } else {
                     window.location.href = 'user-dashboard.html';
                 }
+
             } catch (err) {
                 error.textContent = err.message;
                 error.style.display = 'block';
@@ -159,6 +387,57 @@
                 btn.disabled = false;
             }
         });
+
+        // ========== Forgot Password ==========
+        document.getElementById('forgotPasswordForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('resetEmail').value;
+            const btn = document.getElementById('resetBtn');
+            const error = document.getElementById('resetError');
+
+            btn.classList.add('loading');
+            btn.disabled = true;
+            error.style.display = 'none';
+
+            try {
+                await auth.sendPasswordResetEmail(email);
+                alert('পাসওয়ার্ড রিসেট লিংক আপনার ইমেইলে পাঠানো হয়েছে।');
+                hideForgotPassword();
+                document.getElementById('resetEmail').value = '';
+            } catch (err) {
+                error.textContent = err.message;
+                error.style.display = 'block';
+            } finally {
+                btn.classList.remove('loading');
+                btn.disabled = false;
+            }
+        });
+
+        // ========== Auth State Listener (Redirection fix) ==========
+        auth.onAuthStateChanged((user) => {
+            if (user) {
+                const userData = localStorage.getItem('userData');
+                if (userData) {
+                    const userInfo = JSON.parse(userData);
+                    const currentPath = window.location.pathname;
+                    // Only redirect if on login/register pages
+                    if (currentPath.includes('login.html') || currentPath.includes('register.html') || currentPath.endsWith('/')) {
+                        if (userInfo.role === 'admin') {
+                            window.location.href = 'admin-dashboard.html';
+                        } else {
+                            window.location.href = 'user-dashboard.html';
+                        }
+                    }
+                }
+            }
+        });
+
+        // ========== Auto-fill saved email ==========
+        const savedData = localStorage.getItem('userData');
+        if (savedData) {
+            const userInfo = JSON.parse(savedData);
+            document.getElementById('loginEmail').value = userInfo.email || '';
+        }
     </script>
 </body>
 </html>
