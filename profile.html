@@ -1,1 +1,90 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>প্রোফাইল - হিসাবের খাতা</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        :root { --primary: #6366f1; --success: #10b981; --bg-card: #ffffff; --border-color: #e2e8f0; --shadow: 0 4px 6px -1px rgba(0,0,0,0.1); --radius: 16px; --transition: all 0.3s; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Hind Siliguri', sans-serif; }
+        body { background: #f1f5f9; padding: 20px; }
+        .container { max-width: 500px; margin: 0 auto; }
+        .card { background: var(--bg-card); border-radius: var(--radius); padding: 30px; box-shadow: var(--shadow); }
+        .avatar { width: 100px; height: 100px; border-radius: 50%; background: linear-gradient(135deg, var(--primary), #06b6d4); display: flex; align-items: center; justify-content: center; color: white; font-size: 40px; font-weight: 700; margin: 0 auto 20px; }
+        .form-group { margin-bottom: 16px; }
+        .form-group label { display: block; font-weight: 600; margin-bottom: 6px; }
+        .form-group input { width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 10px; }
+        .btn { padding: 10px 20px; border: none; border-radius: 12px; font-weight: 600; cursor: pointer; transition: var(--transition); width: 100%; }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-primary:hover { transform: translateY(-2px); }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <div class="avatar" id="profileAvatar">U</div>
+            <h2 style="text-align: center; margin-bottom: 20px;">প্রোফাইল</h2>
+            
+            <div class="form-group"><label>নাম</label><input type="text" id="profileName" disabled></div>
+            <div class="form-group"><label>ইমেইল</label><input type="email" id="profileEmail" disabled></div>
+            <div class="form-group"><label>ব্যবসার নাম</label><input type="text" id="profileBusiness" disabled></div>
+            <div class="form-group"><label>মোবাইল</label><input type="tel" id="profileMobile" disabled></div>
+            
+            <hr style="margin: 20px 0; border: none; border-top: 1px solid var(--border-color);">
+            <h3 style="margin-bottom: 16px;">সেটিংস</h3>
+            
+            <div class="form-group"><label>নাম আপডেট</label><input type="text" id="settingsName" placeholder="আপনার নাম"></div>
+            <div class="form-group"><label>ব্যবসার নাম আপডেট</label><input type="text" id="settingsBusiness" placeholder="ব্যবসার নাম"></div>
+            <div class="form-group"><label>মোবাইল আপডেট</label><input type="tel" id="settingsMobile" placeholder="মোবাইল নম্বর"></div>
+            
+            <button class="btn btn-primary" onclick="updateProfile()">আপডেট করুন</button>
+        </div>
+    </div>
 
+    <script src="firebase-config.js"></script>
+    <script src="shared.js"></script>
+    <script>
+        // 🔐 Security Check
+        if (!auth.currentUser) {
+            window.location.href = 'login.html';
+        }
+
+        const uid = auth.currentUser.uid;
+
+        // ========== Load Profile ==========
+        function loadProfile() {
+            database.ref('users/' + uid).once('value', snap => {
+                const data = snap.val() || {};
+                document.getElementById('profileName').value = data.name || '';
+                document.getElementById('profileEmail').value = data.email || '';
+                document.getElementById('profileBusiness').value = data.businessName || '';
+                document.getElementById('profileMobile').value = data.mobileNumber || '';
+                document.getElementById('profileAvatar').textContent = (data.name || 'U')[0].toUpperCase();
+                document.getElementById('settingsName').value = data.name || '';
+                document.getElementById('settingsBusiness').value = data.businessName || '';
+                document.getElementById('settingsMobile').value = data.mobileNumber || '';
+            });
+        }
+
+        // ========== Update Profile ==========
+        async function updateProfile() {
+            const name = document.getElementById('settingsName').value;
+            const business = document.getElementById('settingsBusiness').value;
+            const mobile = document.getElementById('settingsMobile').value;
+
+            await database.ref('users/' + uid).update({
+                name: name,
+                businessName: business,
+                mobileNumber: mobile
+            });
+
+            showNotification('প্রোফাইল আপডেট করা হয়েছে', 'success');
+            loadProfile();
+        }
+
+        // ========== Init ==========
+        loadProfile();
+    </script>
+</body>
+</html>
