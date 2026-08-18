@@ -1,1 +1,116 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>পণ্য - হিসাবের খাতা</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        :root { --success: #10b981; --danger: #ef4444; --bg-card: #ffffff; --border-color: #e2e8f0; --shadow: 0 4px 6px -1px rgba(0,0,0,0.1); --radius: 16px; --transition: all 0.3s; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Hind Siliguri', sans-serif; }
+        body { background: #f1f5f9; padding: 20px; }
+        .container { max-width: 1000px; margin: 0 auto; }
+        .card { background: var(--bg-card); border-radius: var(--radius); padding: 20px; margin-bottom: 20px; box-shadow: var(--shadow); }
+        .stock-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; }
+        .stock-card {
+            background: var(--bg-card);
+            padding: 16px;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            border-left: 4px solid var(--success);
+        }
+        .stock-card.low-stock { border-left-color: var(--danger); }
+        .stock-card h4 { margin-bottom: 4px; }
+        .stock-card .badge { padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+        .badge-success { background: #d1fae5; color: #065f46; }
+        .badge-danger { background: #fee2e2; color: #991b1b; }
+        .btn { padding: 6px 12px; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: var(--transition); font-size: 12px; }
+        .btn-success { background: var(--success); color: white; }
+        .btn-danger { background: var(--danger); color: white; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2 style="margin-bottom: 16px;"><i class="fas fa-boxes"></i> পণ্য / স্টক</h2>
+        <div class="stock-grid" id="productsGrid"></div>
+    </div>
 
+    <script src="firebase-config.js"></script>
+    <script src="shared.js"></script>
+    <script>
+        // 🔐 Security Check
+        if (!auth.currentUser) {
+            window.location.href = 'login.html';
+        }
+
+        const uid = auth.currentUser.uid;
+
+        // ========== Load Products ==========
+        function loadProducts() {
+            database.ref('products/' + uid).on('value', snap => {
+                const products = snap.val() || {};
+                const grid = document.getElementById('productsGrid');
+                const entries = Object.entries(products);
+                if (!entries.length) {
+                    grid.innerHTML = '<div style="text-align:center;padding:40px;color:#64748b;">কোনো পণ্য নেই</div>';
+                    return;
+                }
+                grid.innerHTML = entries.map(([key, p]) => {
+                    const isLow = p.stock <= 5;
+                    return `
+                        <div class="stock-card ${isLow ? 'low-stock' : ''}">
+                            <div style="display:flex;justify-content:space-between;align-items:center;">
+                                <h4>${p.name}</h4>
+                                <span class="badge ${isLow ? 'badge-danger' : 'badge-success'}">${p.stock}</span>
+                            </div>
+                            <div style="font-size:13px;color:#64748b;margin:4px 0;">
+                                ক্রয়: ৳${p.purchasePrice} | বিক্রয়: ৳${p.salePrice}
+                            </div>
+                            <div style="font-size:12px;color:#64748b;">বিক্রি হয়েছে: ${p.sold || 0}</div>
+                            ${isLow ? '<div style="color:var(--danger);font-size:12px;margin-top:4px;"><i class="fas fa-exclamation-triangle"></i> স্টক কম!</div>' : ''}
+                            <div style="margin-top:8px;display:flex;gap:6px;">
+                                <button class="btn btn-success" onclick="quickPurchase('${key}')"><i class="fas fa-cart-plus"></i> ক্রয়</button>
+                                <button class="btn btn-danger" onclick="deleteProduct('${key}')"><i class="fas fa-trash"></i></button>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            });
+        }
+
+        // ========== Quick Purchase ==========
+        async function quickPurchase(key) {
+            const p = allProducts[key];
+            const qty = prompt(`কত ${p.name} কিনবেন?`);
+            if (!qty || +qty <= 0) return;
+            const price = parseFloat(prompt('ক্রয় মূল্য?')) || p.purchasePrice;
+            const salePrice = parseFloat(prompt('বিক্রয় মূল্য?')) || p.salePrice;
+            const total = +qty * price;
+
+            await database.ref('purchases/' + uid).push().set({
+                productName: p.name, quantity: +qty, purchasePrice: price, salePrice: salePrice,
+                total: total, timestamp: firebase.database.ServerValue.TIMESTAMP
+            });
+            await database.ref('products/' + uid + '/' + key).update({
+                stock: p.stock + +qty, purchasePrice: price, salePrice: salePrice,
+                lastPurchaseDate: firebase.database.ServerValue.TIMESTAMP
+            });
+            showNotification('ক্রয় হয়েছে', 'success');
+        }
+
+        // ========== Delete Product ==========
+        async function deleteProduct(key) {
+            if (!confirm('পণ্য ডিলিট করবেন?')) return;
+            await database.ref('products/' + uid + '/' + key).remove();
+            showNotification('ডিলিট করা হয়েছে', 'success');
+        }
+
+        // ========== Init ==========
+        let allProducts = {};
+        database.ref('products/' + uid).on('value', snap => {
+            allProducts = snap.val() || {};
+            loadProducts();
+        });
+    </script>
+</body>
+</html>
