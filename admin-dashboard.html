@@ -4,11 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>এডমিন ডেসবোর্ড - হিসাবের খাতা</title>
+    <!-- Same CSS as previous admin-dashboard.html -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
     <style>
+        /* Same CSS as previous admin-dashboard.html */
         :root {
             --primary: #6366f1;
             --primary-dark: #4f46e5;
@@ -28,227 +30,69 @@
         }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Hind Siliguri', sans-serif; }
         body { background: var(--bg-body); min-height: 100vh; display: flex; overflow-x: hidden; }
-        
-        /* Sidebar */
-        .sidebar {
-            width: var(--sidebar-width);
-            background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
-            position: fixed;
-            height: 100vh;
-            padding: 20px 16px;
-            display: flex;
-            flex-direction: column;
-            transition: var(--transition);
-            z-index: 1000;
-            overflow-y: auto;
-        }
-        .sidebar-logo {
-            text-align: center;
-            padding-bottom: 20px;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-            margin-bottom: 20px;
-        }
-        .sidebar-logo i {
-            font-size: 40px;
-            color: var(--primary);
-            background: rgba(255,255,255,0.1);
-            padding: 12px;
-            border-radius: 50%;
-        }
+        .sidebar { width: var(--sidebar-width); background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%); position: fixed; height: 100vh; padding: 20px 16px; display: flex; flex-direction: column; transition: var(--transition); z-index: 1000; overflow-y: auto; }
+        .sidebar-logo { text-align: center; padding-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 20px; }
+        .sidebar-logo i { font-size: 40px; color: var(--primary); background: rgba(255,255,255,0.1); padding: 12px; border-radius: 50%; }
         .sidebar-logo h3 { color: white; margin-top: 8px; font-size: 20px; }
         .sidebar-logo p { color: rgba(255,255,255,0.6); font-size: 12px; }
-        .nav-link {
-            display: flex;
-            align-items: center;
-            padding: 12px 14px;
-            color: rgba(255,255,255,0.7);
-            text-decoration: none;
-            border-radius: 12px;
-            transition: var(--transition);
-            cursor: pointer;
-            gap: 12px;
-            font-weight: 500;
-            margin-bottom: 4px;
-        }
-        .nav-link:hover {
-            background: rgba(99, 102, 241, 0.2);
-            color: white;
-            transform: translateX(4px);
-        }
-        .nav-link.active {
-            background: var(--primary);
-            color: white;
-            box-shadow: 0 4px 12px rgba(99,102,241,0.3);
-        }
+        .nav-link { display: flex; align-items: center; padding: 12px 14px; color: rgba(255,255,255,0.7); text-decoration: none; border-radius: 12px; transition: var(--transition); cursor: pointer; gap: 12px; font-weight: 500; margin-bottom: 4px; }
+        .nav-link:hover { background: rgba(99, 102, 241, 0.2); color: white; transform: translateX(4px); }
+        .nav-link.active { background: var(--primary); color: white; box-shadow: 0 4px 12px rgba(99,102,241,0.3); }
         .nav-link i { width: 24px; text-align: center; font-size: 18px; }
-        .sidebar-footer {
-            margin-top: auto;
-            padding-top: 20px;
-            border-top: 1px solid rgba(255,255,255,0.1);
-        }
-        .btn-logout {
-            width: 100%;
-            padding: 12px;
-            background: rgba(239, 68, 68, 0.8);
-            border: none;
-            border-radius: 12px;
-            color: white;
-            font-weight: 600;
-            cursor: pointer;
-            transition: var(--transition);
-            font-size: 14px;
-        }
+        .sidebar-footer { margin-top: auto; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.1); }
+        .btn-logout { width: 100%; padding: 12px; background: rgba(239, 68, 68, 0.8); border: none; border-radius: 12px; color: white; font-weight: 600; cursor: pointer; transition: var(--transition); font-size: 14px; }
         .btn-logout:hover { background: #dc2626; }
-
-        /* Main Content */
-        .main-content {
-            margin-left: var(--sidebar-width);
-            flex: 1;
-            padding: 20px;
-            min-height: 100vh;
-        }
-        .top-bar {
-            background: var(--bg-card);
-            padding: 16px 24px;
-            border-radius: var(--radius);
-            box-shadow: var(--shadow);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 24px;
-            position: sticky;
-            top: 16px;
-            z-index: 100;
-        }
+        .main-content { margin-left: var(--sidebar-width); flex: 1; padding: 20px; min-height: 100vh; }
+        .top-bar { background: var(--bg-card); padding: 16px 24px; border-radius: var(--radius); box-shadow: var(--shadow); display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; position: sticky; top: 16px; z-index: 100; }
         .page-title { font-size: 20px; font-weight: 700; color: var(--text-primary); }
         .admin-info { display: flex; align-items: center; gap: 12px; }
-        .admin-avatar {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: 700;
-        }
-        .section {
-            display: none;
-            animation: fadeIn 0.3s ease;
-        }
+        .admin-avatar { width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, var(--primary), var(--secondary)); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; }
+        .section { display: none; animation: fadeIn 0.3s ease; }
         .section.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
-        /* Cards */
-        .card {
-            background: var(--bg-card);
-            border-radius: var(--radius);
-            padding: 20px;
-            margin-bottom: 20px;
-            box-shadow: var(--shadow);
-        }
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 16px;
-            margin-bottom: 24px;
-        }
-        .stat-card {
-            background: var(--bg-card);
-            padding: 20px;
-            border-radius: var(--radius);
-            box-shadow: var(--shadow);
-            text-align: center;
-        }
+        .card { background: var(--bg-card); border-radius: var(--radius); padding: 20px; margin-bottom: 20px; box-shadow: var(--shadow); }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px; }
+        .stat-card { background: var(--bg-card); padding: 20px; border-radius: var(--radius); box-shadow: var(--shadow); text-align: center; }
         .stat-card h4 { color: var(--text-secondary); font-size: 14px; }
         .stat-card p { font-size: 24px; font-weight: 700; color: var(--text-primary); }
-
-        /* Tables */
-        .table-container {
-            background: var(--bg-card);
-            border-radius: var(--radius);
-            overflow: hidden;
-            box-shadow: var(--shadow);
-        }
-        .data-table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        .data-table th {
-            background: #f1f5f9;
-            padding: 14px 16px;
-            text-align: left;
-            font-weight: 600;
-            font-size: 14px;
-            color: var(--text-secondary);
-        }
-        .data-table td {
-            padding: 14px 16px;
-            border-bottom: 1px solid var(--border-color);
-        }
+        .table-container { background: var(--bg-card); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); }
+        .data-table { width: 100%; border-collapse: collapse; }
+        .data-table th { background: #f1f5f9; padding: 14px 16px; text-align: left; font-weight: 600; font-size: 14px; color: var(--text-secondary); }
+        .data-table td { padding: 14px 16px; border-bottom: 1px solid var(--border-color); }
         .data-table tr:hover td { background: #f8fafc; }
-
-        /* Responsive */
-        @media (max-width: 768px) {
-            .sidebar { transform: translateX(-100%); width: 280px; }
-            .sidebar.active { transform: translateX(0); }
-            .main-content { margin-left: 0; }
-            .menu-toggle { display: block; background: none; border: none; font-size: 24px; cursor: pointer; }
-            .stats-grid { grid-template-columns: 1fr 1fr; }
-        }
+        @media (max-width: 768px) { .sidebar { transform: translateX(-100%); width: 280px; } .sidebar.active { transform: translateX(0); } .main-content { margin-left: 0; } .menu-toggle { display: block; background: none; border: none; font-size: 24px; cursor: pointer; } .stats-grid { grid-template-columns: 1fr 1fr; } }
     </style>
 </head>
 <body>
-    <!-- Sidebar -->
     <aside class="sidebar" id="sidebar">
         <div class="sidebar-logo">
             <i class="fas fa-shield-alt"></i>
             <h3>এডমিন প্যানেল</h3>
             <p>হিসাবের খাতা</p>
         </div>
-        
         <nav>
-            <a class="nav-link active" data-section="dashboard" onclick="showSection('dashboard')">
-                <i class="fas fa-th-large"></i> ডেসবোর্ড
-            </a>
-            <a class="nav-link" data-section="users" onclick="showSection('users')">
-                <i class="fas fa-users"></i> ইউজার
-            </a>
-            <a class="nav-link" data-section="logs" onclick="showSection('logs')">
-                <i class="fas fa-history"></i> লগ
-            </a>
-            <a class="nav-link" data-section="settings" onclick="showSection('settings')">
-                <i class="fas fa-cog"></i> সেটিংস
-            </a>
+            <a class="nav-link active" data-section="dashboard" onclick="showSection('dashboard')"><i class="fas fa-th-large"></i> ডেসবোর্ড</a>
+            <a class="nav-link" data-section="users" onclick="showSection('users')"><i class="fas fa-users"></i> ইউজার</a>
+            <a class="nav-link" data-section="logs" onclick="showSection('logs')"><i class="fas fa-history"></i> লগ</a>
+            <a class="nav-link" data-section="settings" onclick="showSection('settings')"><i class="fas fa-cog"></i> সেটিংস</a>
         </nav>
-        
         <div class="sidebar-footer">
-            <button class="btn-logout" onclick="logout()">
-                <i class="fas fa-sign-out-alt"></i> লগআউট
-            </button>
+            <button class="btn-logout" onclick="logout()"><i class="fas fa-sign-out-alt"></i> লগআউট</button>
         </div>
     </aside>
 
-    <!-- Main Content -->
     <main class="main-content">
         <header class="top-bar">
             <div style="display: flex; align-items: center; gap: 12px;">
-                <button class="menu-toggle" onclick="toggleSidebar()">
-                    <i class="fas fa-bars"></i>
-                </button>
+                <button class="menu-toggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
                 <span class="page-title" id="pageTitle">ডেসবোর্ড</span>
             </div>
             <div class="admin-info">
                 <div class="admin-avatar" id="adminAvatar">A</div>
-                <div>
-                    <div id="adminName" style="font-weight: 600;">এডমিন</div>
-                    <div style="font-size: 12px; color: var(--text-secondary);" id="adminEmail">admin@email.com</div>
-                </div>
+                <div><div id="adminName" style="font-weight: 600;">এডমিন</div><div style="font-size: 12px; color: var(--text-secondary);" id="adminEmail">admin@email.com</div></div>
             </div>
         </header>
 
-        <!-- Dashboard Section -->
         <section id="dashboard" class="section active">
             <div class="stats-grid" id="adminStats">
                 <div class="stat-card"><h4>মোট ইউজার</h4><p id="totalUsers">0</p></div>
@@ -256,13 +100,9 @@
                 <div class="stat-card"><h4>মোট লেনদেন</h4><p id="totalTransactions">0</p></div>
                 <div class="stat-card"><h4>মোট আয়</h4><p id="totalRevenue">৳0</p></div>
             </div>
-            <div class="card">
-                <h3 style="margin-bottom: 12px;">👥 সাম্প্রতিক ইউজার</h3>
-                <div id="recentUsers">লোড হচ্ছে...</div>
-            </div>
+            <div class="card"><h3 style="margin-bottom: 12px;">👥 সাম্প্রতিক ইউজার</h3><div id="recentUsers">লোড হচ্ছে...</div></div>
         </section>
 
-        <!-- Users Section -->
         <section id="users" class="section">
             <div style="display: flex; justify-content: space-between; margin-bottom: 16px;">
                 <h2><i class="fas fa-users"></i> সকল ইউজার</h2>
@@ -275,7 +115,6 @@
             </div>
         </section>
 
-        <!-- Logs Section -->
         <section id="logs" class="section">
             <h2><i class="fas fa-history"></i> অ্যাক্টিভিটি লগ</h2>
             <div class="table-container">
@@ -286,7 +125,6 @@
             </div>
         </section>
 
-        <!-- Settings Section -->
         <section id="settings" class="section">
             <div class="card" style="max-width: 500px; margin: 0 auto;">
                 <h2 style="text-align: center; margin-bottom: 20px;">সেটিংস</h2>
@@ -304,6 +142,11 @@
     <script>
         // 🔐 Security Check
         if (!auth.currentUser) {
+            window.location.href = 'login.html';
+        }
+
+        // Prevent redirect loop
+        if (window.location.pathname.includes('admin-dashboard.html') && !auth.currentUser) {
             window.location.href = 'login.html';
         }
 
@@ -336,17 +179,7 @@
                     if (user.role === 'admin') return;
                     total++;
                     if (user.lastLogin && Date.now() - user.lastLogin < 7*24*60*60*1000) active++;
-                    html += `
-                        <tr>
-                            <td><strong>${user.name || 'N/A'}</strong></td>
-                            <td>${user.email || ''}</td>
-                            <td>${user.businessName || 'N/A'}</td>
-                            <td><span class="badge badge-info">${user.role || 'user'}</span></td>
-                            <td>
-                                <button class="btn btn-danger btn-sm" onclick="deleteUser('${key}')"><i class="fas fa-trash"></i></button>
-                            </td>
-                        </tr>
-                    `;
+                    html += `<tr><td><strong>${user.name || 'N/A'}</strong></td><td>${user.email || ''}</td><td>${user.businessName || 'N/A'}</td><td><span style="background:#dbeafe;padding:4px 12px;border-radius:20px;font-size:12px;">${user.role || 'user'}</span></td><td><button class="btn btn-danger btn-sm" onclick="deleteUser('${key}')"><i class="fas fa-trash"></i></button></td></tr>`;
                 });
                 tbody.innerHTML = html || '<tr><td colspan="5" style="text-align:center;padding:20px;">কোনো ইউজার নেই</td></tr>';
                 document.getElementById('totalUsers').textContent = total;
@@ -355,7 +188,6 @@
             });
         }
 
-        // ========== Recent Users ==========
         function loadRecentUsers() {
             const container = document.getElementById('recentUsers');
             let html = '';
@@ -363,31 +195,26 @@
             const recent = sorted.slice(0, 5);
             recent.forEach(([key, user]) => {
                 if (user.role === 'admin') return;
-                html += `
-                    <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #e2e8f0;">
-                        <span><strong>${user.name || 'N/A'}</strong> - ${user.email}</span>
-                        <span>${getBangladeshTime(user.createdAt)}</span>
-                    </div>
-                `;
+                html += `<div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #e2e8f0;">
+                    <span><strong>${user.name || 'N/A'}</strong> - ${user.email}</span>
+                    <span>${getBangladeshTime(user.createdAt)}</span>
+                </div>`;
             });
             container.innerHTML = html || 'কোনো ইউজার নেই';
         }
 
-        // ========== Delete User ==========
         async function deleteUser(key) {
             if (!confirm('এই ইউজারকে ডিলিট করবেন?')) return;
             await database.ref('users/' + key).remove();
             showNotification('ইউজার ডিলিট করা হয়েছে', 'success');
         }
 
-        // ========== Update Admin ==========
         async function updateAdmin() {
             const name = document.getElementById('adminNameInput').value;
             await database.ref('users/' + uid + '/name').set(name);
             showNotification('প্রোফাইল আপডেট করা হয়েছে', 'success');
         }
 
-        // ========== Section Navigation ==========
         function showSection(id) {
             document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
             document.getElementById(id).classList.add('active');
@@ -401,7 +228,6 @@
             document.getElementById('sidebar').classList.toggle('active');
         }
 
-        // ========== Logout ==========
         async function logout() {
             await auth.signOut();
             localStorage.removeItem('userData');
