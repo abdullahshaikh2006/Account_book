@@ -4,11 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ইউজার ডেসবোর্ড - হিসাবের খাতা</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+    <!-- ... same CSS as before ... -->
     <style>
+        /* Same as previous user-dashboard.html */
         :root {
             --primary: #6366f1;
             --primary-dark: #4f46e5;
@@ -28,315 +26,93 @@
         }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Hind Siliguri', sans-serif; }
         body { background: var(--bg-body); min-height: 100vh; display: flex; overflow-x: hidden; }
-        
-        /* Sidebar */
-        .sidebar {
-            width: var(--sidebar-width);
-            background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
-            position: fixed;
-            height: 100vh;
-            padding: 20px 16px;
-            display: flex;
-            flex-direction: column;
-            transition: var(--transition);
-            z-index: 1000;
-            overflow-y: auto;
-        }
-        .sidebar-logo {
-            text-align: center;
-            padding-bottom: 20px;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-            margin-bottom: 20px;
-        }
-        .sidebar-logo i {
-            font-size: 40px;
-            color: var(--primary);
-            background: rgba(255,255,255,0.1);
-            padding: 12px;
-            border-radius: 50%;
-        }
+        .sidebar { width: var(--sidebar-width); background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%); position: fixed; height: 100vh; padding: 20px 16px; display: flex; flex-direction: column; transition: var(--transition); z-index: 1000; overflow-y: auto; }
+        .sidebar-logo { text-align: center; padding-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 20px; }
+        .sidebar-logo i { font-size: 40px; color: var(--primary); background: rgba(255,255,255,0.1); padding: 12px; border-radius: 50%; }
         .sidebar-logo h3 { color: white; margin-top: 8px; font-size: 20px; }
         .sidebar-logo p { color: rgba(255,255,255,0.6); font-size: 12px; }
-        .nav-link {
-            display: flex;
-            align-items: center;
-            padding: 12px 14px;
-            color: rgba(255,255,255,0.7);
-            text-decoration: none;
-            border-radius: 12px;
-            transition: var(--transition);
-            cursor: pointer;
-            gap: 12px;
-            font-weight: 500;
-            margin-bottom: 4px;
-        }
-        .nav-link:hover {
-            background: rgba(99, 102, 241, 0.2);
-            color: white;
-            transform: translateX(4px);
-        }
-        .nav-link.active {
-            background: var(--primary);
-            color: white;
-            box-shadow: 0 4px 12px rgba(99,102,241,0.3);
-        }
+        .nav-link { display: flex; align-items: center; padding: 12px 14px; color: rgba(255,255,255,0.7); text-decoration: none; border-radius: 12px; transition: var(--transition); cursor: pointer; gap: 12px; font-weight: 500; margin-bottom: 4px; }
+        .nav-link:hover { background: rgba(99, 102, 241, 0.2); color: white; transform: translateX(4px); }
+        .nav-link.active { background: var(--primary); color: white; box-shadow: 0 4px 12px rgba(99,102,241,0.3); }
         .nav-link i { width: 24px; text-align: center; font-size: 18px; }
-        .sidebar-footer {
-            margin-top: auto;
-            padding-top: 20px;
-            border-top: 1px solid rgba(255,255,255,0.1);
-        }
-        .btn-logout {
-            width: 100%;
-            padding: 12px;
-            background: rgba(239, 68, 68, 0.8);
-            border: none;
-            border-radius: 12px;
-            color: white;
-            font-weight: 600;
-            cursor: pointer;
-            transition: var(--transition);
-            font-size: 14px;
-        }
+        .sidebar-footer { margin-top: auto; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.1); }
+        .btn-logout { width: 100%; padding: 12px; background: rgba(239, 68, 68, 0.8); border: none; border-radius: 12px; color: white; font-weight: 600; cursor: pointer; transition: var(--transition); font-size: 14px; }
         .btn-logout:hover { background: #dc2626; }
-
-        /* Main Content */
-        .main-content {
-            margin-left: var(--sidebar-width);
-            flex: 1;
-            padding: 20px;
-            min-height: 100vh;
-        }
-        .top-bar {
-            background: var(--bg-card);
-            padding: 16px 24px;
-            border-radius: var(--radius);
-            box-shadow: var(--shadow);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 24px;
-            position: sticky;
-            top: 16px;
-            z-index: 100;
-        }
+        .main-content { margin-left: var(--sidebar-width); flex: 1; padding: 20px; min-height: 100vh; }
+        .top-bar { background: var(--bg-card); padding: 16px 24px; border-radius: var(--radius); box-shadow: var(--shadow); display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; position: sticky; top: 16px; z-index: 100; }
         .page-title { font-size: 20px; font-weight: 700; color: var(--text-primary); }
         .user-info { display: flex; align-items: center; gap: 12px; }
-        .user-avatar {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: 700;
-        }
-        .section {
-            display: none;
-            animation: fadeIn 0.3s ease;
-        }
+        .user-avatar { width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, var(--primary), var(--secondary)); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; }
+        .section { display: none; animation: fadeIn 0.3s ease; }
         .section.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
-        /* Cards */
-        .card {
-            background: var(--bg-card);
-            border-radius: var(--radius);
-            padding: 20px;
-            margin-bottom: 20px;
-            box-shadow: var(--shadow);
-        }
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 16px;
-            margin-bottom: 24px;
-        }
-        .stat-card {
-            background: var(--bg-card);
-            padding: 20px;
-            border-radius: var(--radius);
-            box-shadow: var(--shadow);
-            text-align: center;
-        }
+        .card { background: var(--bg-card); border-radius: var(--radius); padding: 20px; margin-bottom: 20px; box-shadow: var(--shadow); }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px; }
+        .stat-card { background: var(--bg-card); padding: 20px; border-radius: var(--radius); box-shadow: var(--shadow); text-align: center; }
         .stat-card h4 { color: var(--text-secondary); font-size: 14px; }
         .stat-card p { font-size: 24px; font-weight: 700; color: var(--text-primary); }
-
-        /* Buttons */
-        .btn {
-            padding: 10px 20px;
-            border: none;
-            border-radius: 12px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: var(--transition);
-            font-size: 14px;
-        }
+        .btn { padding: 10px 20px; border: none; border-radius: 12px; font-weight: 600; cursor: pointer; transition: var(--transition); font-size: 14px; }
         .btn-primary { background: var(--primary); color: white; }
         .btn-primary:hover { background: var(--primary-dark); transform: translateY(-2px); }
         .btn-success { background: var(--success); color: white; }
         .btn-danger { background: var(--danger); color: white; }
         .btn-block { width: 100%; }
-
-        /* Forms */
         .form-group { margin-bottom: 16px; }
         .form-group label { display: block; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px; }
-        .form-group input, .form-group select {
-            width: 100%;
-            padding: 12px 14px;
-            border: 1px solid var(--border-color);
-            border-radius: 10px;
-            font-size: 14px;
-            transition: var(--transition);
-            background: #f8fafc;
-        }
+        .form-group input, .form-group select { width: 100%; padding: 12px 14px; border: 1px solid var(--border-color); border-radius: 10px; font-size: 14px; transition: var(--transition); background: #f8fafc; }
         .form-group input:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 3px rgba(99,102,241,0.1); }
         .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-
-        /* Tables */
-        .table-container {
-            background: var(--bg-card);
-            border-radius: var(--radius);
-            overflow: hidden;
-            box-shadow: var(--shadow);
-        }
-        .data-table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        .data-table th {
-            background: #f1f5f9;
-            padding: 14px 16px;
-            text-align: left;
-            font-weight: 600;
-            font-size: 14px;
-            color: var(--text-secondary);
-        }
-        .data-table td {
-            padding: 14px 16px;
-            border-bottom: 1px solid var(--border-color);
-        }
+        .table-container { background: var(--bg-card); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); }
+        .data-table { width: 100%; border-collapse: collapse; }
+        .data-table th { background: #f1f5f9; padding: 14px 16px; text-align: left; font-weight: 600; font-size: 14px; color: var(--text-secondary); }
+        .data-table td { padding: 14px 16px; border-bottom: 1px solid var(--border-color); }
         .data-table tr:hover td { background: #f8fafc; }
-
-        /* Stock Cards */
-        .stock-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-            gap: 16px;
-        }
-        .stock-card {
-            background: var(--bg-card);
-            padding: 16px;
-            border-radius: var(--radius);
-            box-shadow: var(--shadow);
-            border-left: 4px solid var(--success);
-        }
+        .stock-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; }
+        .stock-card { background: var(--bg-card); padding: 16px; border-radius: var(--radius); box-shadow: var(--shadow); border-left: 4px solid var(--success); }
         .stock-card.low-stock { border-left-color: var(--danger); }
         .stock-card h4 { margin-bottom: 4px; }
-        .stock-card .badge {
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 600;
-        }
+        .stock-card .badge { padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
         .badge-success { background: #d1fae5; color: #065f46; }
         .badge-danger { background: #fee2e2; color: #991b1b; }
-
-        /* Notification */
-        .notification-container {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 9999;
-            max-width: 380px;
-            width: 100%;
-        }
-        .notification {
-            padding: 14px 18px;
-            border-radius: 14px;
-            background: white;
-            box-shadow: 0 12px 32px -8px rgba(0,0,0,0.12);
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            animation: slideIn 0.4s ease;
-            border-left: 5px solid var(--primary);
-        }
+        .notification-container { position: fixed; top: 20px; right: 20px; z-index: 9999; max-width: 380px; width: 100%; }
+        .notification { padding: 14px 18px; border-radius: 14px; background: white; box-shadow: 0 12px 32px -8px rgba(0,0,0,0.12); display: flex; align-items: center; gap: 12px; animation: slideIn 0.4s ease; border-left: 5px solid var(--primary); }
         @keyframes slideIn { from { opacity: 0; transform: translateX(60px); } to { opacity: 1; transform: translateX(0); } }
-
-        /* Responsive */
-        @media (max-width: 768px) {
-            .sidebar { transform: translateX(-100%); width: 280px; }
-            .sidebar.active { transform: translateX(0); }
-            .main-content { margin-left: 0; }
-            .menu-toggle { display: block; background: none; border: none; font-size: 24px; cursor: pointer; }
-            .stats-grid { grid-template-columns: 1fr 1fr; }
-            .form-row { grid-template-columns: 1fr; }
-            .stock-grid { grid-template-columns: 1fr; }
-        }
+        @media (max-width: 768px) { .sidebar { transform: translateX(-100%); width: 280px; } .sidebar.active { transform: translateX(0); } .main-content { margin-left: 0; } .menu-toggle { display: block; background: none; border: none; font-size: 24px; cursor: pointer; } .stats-grid { grid-template-columns: 1fr 1fr; } .form-row { grid-template-columns: 1fr; } .stock-grid { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
-    <!-- Sidebar -->
     <aside class="sidebar" id="sidebar">
         <div class="sidebar-logo">
             <i class="fas fa-store-alt"></i>
             <h3>হিসাবের খাতা</h3>
             <p id="businessName">ব্যবসা</p>
         </div>
-        
         <nav>
-            <a class="nav-link active" data-section="dashboard" onclick="showSection('dashboard')">
-                <i class="fas fa-th-large"></i> ডেসবোর্ড
-            </a>
-            <a class="nav-link" data-section="purchases" onclick="loadSection('purchases')">
-                <i class="fas fa-shopping-cart"></i> ক্রয়
-            </a>
-            <a class="nav-link" data-section="sales" onclick="loadSection('sales')">
-                <i class="fas fa-cash-register"></i> বিক্রি
-            </a>
-            <a class="nav-link" data-section="expenses" onclick="loadSection('expenses')">
-                <i class="fas fa-receipt"></i> খরচ
-            </a>
-            <a class="nav-link" data-section="products" onclick="loadSection('products')">
-                <i class="fas fa-boxes"></i> পণ্য/স্টক
-            </a>
-            <a class="nav-link" data-section="reports" onclick="loadSection('reports')">
-                <i class="fas fa-chart-pie"></i> রিপোর্ট
-            </a>
-            <a class="nav-link" data-section="profile" onclick="showSection('profile')">
-                <i class="fas fa-user"></i> প্রোফাইল
-            </a>
+            <a class="nav-link active" data-section="dashboard" onclick="showSection('dashboard')"><i class="fas fa-th-large"></i> ডেসবোর্ড</a>
+            <a class="nav-link" data-section="purchases" onclick="loadSection('purchases')"><i class="fas fa-shopping-cart"></i> ক্রয়</a>
+            <a class="nav-link" data-section="sales" onclick="loadSection('sales')"><i class="fas fa-cash-register"></i> বিক্রি</a>
+            <a class="nav-link" data-section="expenses" onclick="loadSection('expenses')"><i class="fas fa-receipt"></i> খরচ</a>
+            <a class="nav-link" data-section="products" onclick="loadSection('products')"><i class="fas fa-boxes"></i> পণ্য/স্টক</a>
+            <a class="nav-link" data-section="reports" onclick="loadSection('reports')"><i class="fas fa-chart-pie"></i> রিপোর্ট</a>
+            <a class="nav-link" data-section="profile" onclick="showSection('profile')"><i class="fas fa-user"></i> প্রোফাইল</a>
         </nav>
-        
         <div class="sidebar-footer">
-            <button class="btn-logout" onclick="logout()">
-                <i class="fas fa-sign-out-alt"></i> লগআউট
-            </button>
+            <button class="btn-logout" onclick="logout()"><i class="fas fa-sign-out-alt"></i> লগআউট</button>
         </div>
     </aside>
 
-    <!-- Main Content -->
     <main class="main-content">
         <header class="top-bar">
             <div style="display: flex; align-items: center; gap: 12px;">
-                <button class="menu-toggle" onclick="toggleSidebar()">
-                    <i class="fas fa-bars"></i>
-                </button>
+                <button class="menu-toggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
                 <span class="page-title" id="pageTitle">ডেসবোর্ড</span>
             </div>
             <div class="user-info">
                 <div class="user-avatar" id="userAvatar">U</div>
-                <div>
-                    <div id="userName" style="font-weight: 600;">User</div>
-                    <div style="font-size: 12px; color: var(--text-secondary);" id="userEmail">user@email.com</div>
-                </div>
+                <div><div id="userName" style="font-weight: 600;">User</div><div style="font-size: 12px; color: var(--text-secondary);" id="userEmail">user@email.com</div></div>
             </div>
         </header>
 
-        <!-- Dashboard Section (Native) -->
         <section id="dashboard" class="section active">
             <div class="stats-grid" id="dashboardStats">
                 <div class="stat-card"><h4>মোট বিক্রি</h4><p id="totalSales">৳0</p></div>
@@ -346,13 +122,9 @@
                 <div class="stat-card"><h4>মোট বাকি</h4><p id="totalDue">৳0</p></div>
                 <div class="stat-card"><h4>স্টক ভ্যালু</h4><p id="stockValue">৳0</p></div>
             </div>
-            <div class="card">
-                <h3 style="margin-bottom: 12px;">📊 সাম্প্রতিক লেনদেন</h3>
-                <div id="recentTransactions">লোড হচ্ছে...</div>
-            </div>
+            <div class="card"><h3 style="margin-bottom: 12px;">📊 সাম্প্রতিক লেনদেন</h3><div id="recentTransactions">লোড হচ্ছে...</div></div>
         </section>
 
-        <!-- Profile Section (Native) -->
         <section id="profile" class="section">
             <div class="card" style="max-width: 500px; margin: 0 auto;">
                 <h2 style="text-align: center; margin-bottom: 20px;">প্রোফাইল</h2>
@@ -365,7 +137,6 @@
             </div>
         </section>
 
-        <!-- Dynamic Sections (Loaded via Fetch) -->
         <div id="dynamicContent"></div>
     </main>
 
@@ -376,6 +147,11 @@
     <script>
         // 🔐 Security Check
         if (!auth.currentUser) {
+            window.location.href = 'login.html';
+        }
+
+        // Prevent redirect loop: if already on user-dashboard, don't redirect
+        if (window.location.pathname.includes('user-dashboard.html') && !auth.currentUser) {
             window.location.href = 'login.html';
         }
 
@@ -429,25 +205,21 @@
             document.querySelector(`[data-section="${id}"]`).classList.add('active');
             document.getElementById('pageTitle').textContent = document.querySelector(`[data-section="${id}"]`).textContent.trim();
             if (window.innerWidth <= 768) document.getElementById('sidebar').classList.remove('active');
-            // Hide dynamic content
             document.getElementById('dynamicContent').innerHTML = '';
         }
 
         async function loadSection(sectionName) {
-            showSection('dashboard'); // Reset active section
+            showSection('dashboard');
             const response = await fetch(sectionName + '.html');
             const html = await response.text();
             document.getElementById('dynamicContent').innerHTML = html;
-            // Execute scripts in the loaded HTML
             const scripts = document.getElementById('dynamicContent').querySelectorAll('script');
             scripts.forEach(script => {
                 const newScript = document.createElement('script');
                 newScript.textContent = script.textContent;
                 document.body.appendChild(newScript);
             });
-            // Update page title
             document.getElementById('pageTitle').textContent = sectionName.charAt(0).toUpperCase() + sectionName.slice(1);
-            // Close sidebar on mobile
             if (window.innerWidth <= 768) document.getElementById('sidebar').classList.remove('active');
         }
 
@@ -483,12 +255,10 @@
             all.sort((a, b) => (b.time || 0) - (a.time || 0));
             const recent = all.slice(0, 10);
             recent.forEach(item => {
-                html += `
-                    <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #e2e8f0;">
-                        <span><strong>${item.type}</strong> - ${item.desc}</span>
-                        <span>৳${item.amount} | ${getBangladeshTime(item.time)}</span>
-                    </div>
-                `;
+                html += `<div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #e2e8f0;">
+                    <span><strong>${item.type}</strong> - ${item.desc}</span>
+                    <span>৳${item.amount} | ${getBangladeshTime(item.time)}</span>
+                </div>`;
             });
             container.innerHTML = html || 'কোনো লেনদেন নেই';
         }
