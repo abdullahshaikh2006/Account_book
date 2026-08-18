@@ -3,22 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>হিসাবের খাতা - ইউজার ডেসবোর্ড</title>
-    
-    <!-- Firebase SDKs -->
+    <title>ইউজার ডেসবোর্ড - হিসাবের খাতা</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
-    
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    
-    <!-- Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    
     <style>
         :root {
             --primary: #6366f1;
@@ -27,139 +16,89 @@
             --success: #10b981;
             --danger: #ef4444;
             --warning: #f59e0b;
-            --dark: #1e293b;
-            --light: #f8fafc;
-            --gray: #64748b;
-            --border: #e2e8f0;
-            --sidebar-width: 280px;
-            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-            --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            --bg-body: #f1f5f9;
+            --bg-card: #ffffff;
+            --text-primary: #0f172a;
+            --text-secondary: #64748b;
+            --border-color: #e2e8f0;
+            --sidebar-width: 260px;
             --radius: 16px;
+            --shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
             --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Hind Siliguri', 'Poppins', sans-serif;
-            background: var(--light);
-            min-height: 100vh;
-            display: flex;
-            overflow-x: hidden;
-        }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Hind Siliguri', sans-serif; }
+        body { background: var(--bg-body); min-height: 100vh; display: flex; overflow-x: hidden; }
+        
         /* Sidebar */
         .sidebar {
             width: var(--sidebar-width);
-            background: white;
-            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
             position: fixed;
             height: 100vh;
-            padding: 20px;
+            padding: 20px 16px;
             display: flex;
             flex-direction: column;
             transition: var(--transition);
             z-index: 1000;
-        }
-
-        .sidebar-header {
-            padding: 20px 0;
-            border-bottom: 2px solid var(--border);
-            margin-bottom: 20px;
-            text-align: center;
-        }
-
-        .sidebar-logo {
-            width: 60px;
-            height: 60px;
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 10px;
-            color: white;
-            font-size: 28px;
-        }
-
-        .sidebar-header h3 {
-            font-size: 20px;
-            color: var(--dark);
-            font-weight: 700;
-        }
-
-        .sidebar-nav {
-            list-style: none;
-            flex: 1;
             overflow-y: auto;
         }
-
-        .nav-item {
-            margin-bottom: 5px;
+        .sidebar-logo {
+            text-align: center;
+            padding-bottom: 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            margin-bottom: 20px;
         }
-
+        .sidebar-logo i {
+            font-size: 40px;
+            color: var(--primary);
+            background: rgba(255,255,255,0.1);
+            padding: 12px;
+            border-radius: 50%;
+        }
+        .sidebar-logo h3 { color: white; margin-top: 8px; font-size: 20px; }
+        .sidebar-logo p { color: rgba(255,255,255,0.6); font-size: 12px; }
         .nav-link {
             display: flex;
             align-items: center;
-            padding: 12px 16px;
-            color: var(--gray);
+            padding: 12px 14px;
+            color: rgba(255,255,255,0.7);
             text-decoration: none;
             border-radius: 12px;
             transition: var(--transition);
             cursor: pointer;
             gap: 12px;
             font-weight: 500;
-            position: relative;
-            overflow: hidden;
+            margin-bottom: 4px;
         }
-
-        .nav-link::before {
-            content: '';
-            position: absolute;
-            left: 0;
-            top: 0;
-            width: 4px;
-            height: 100%;
-            background: var(--primary);
-            transform: scaleY(0);
-            transition: var(--transition);
-        }
-
         .nav-link:hover {
-            background: rgba(99, 102, 241, 0.1);
-            color: var(--primary);
-            transform: translateX(5px);
+            background: rgba(99, 102, 241, 0.2);
+            color: white;
+            transform: translateX(4px);
         }
-
-        .nav-link:hover::before {
-            transform: scaleY(1);
-        }
-
         .nav-link.active {
             background: var(--primary);
             color: white;
-            box-shadow: var(--shadow);
+            box-shadow: 0 4px 12px rgba(99,102,241,0.3);
         }
-
-        .nav-link.active::before {
-            transform: scaleY(1);
-        }
-
-        .nav-link i {
-            font-size: 20px;
-            width: 24px;
-            text-align: center;
-        }
-
+        .nav-link i { width: 24px; text-align: center; font-size: 18px; }
         .sidebar-footer {
+            margin-top: auto;
             padding-top: 20px;
-            border-top: 2px solid var(--border);
+            border-top: 1px solid rgba(255,255,255,0.1);
         }
+        .btn-logout {
+            width: 100%;
+            padding: 12px;
+            background: rgba(239, 68, 68, 0.8);
+            border: none;
+            border-radius: 12px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            font-size: 14px;
+        }
+        .btn-logout:hover { background: #dc2626; }
 
         /* Main Content */
         .main-content {
@@ -167,40 +106,22 @@
             flex: 1;
             padding: 20px;
             min-height: 100vh;
-            transition: var(--transition);
         }
-
-        /* Top Bar */
         .top-bar {
-            background: white;
-            padding: 15px 20px;
+            background: var(--bg-card);
+            padding: 16px 24px;
             border-radius: var(--radius);
             box-shadow: var(--shadow);
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
+            margin-bottom: 24px;
             position: sticky;
-            top: 20px;
+            top: 16px;
             z-index: 100;
-            backdrop-filter: blur(10px);
         }
-
-        .menu-toggle {
-            display: none;
-            background: none;
-            border: none;
-            font-size: 24px;
-            cursor: pointer;
-            color: var(--gray);
-        }
-
-        .user-info {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
+        .page-title { font-size: 20px; font-weight: 700; color: var(--text-primary); }
+        .user-info { display: flex; align-items: center; gap: 12px; }
         .user-avatar {
             width: 40px;
             height: 40px;
@@ -210,1229 +131,378 @@
             align-items: center;
             justify-content: center;
             color: white;
-            font-weight: bold;
-            cursor: pointer;
-            position: relative;
+            font-weight: 700;
         }
-
-        .user-avatar:hover .user-dropdown {
-            display: block;
-        }
-
-        .user-dropdown {
-            display: none;
-            position: absolute;
-            top: 50px;
-            right: 0;
-            background: white;
-            border-radius: 12px;
-            box-shadow: var(--shadow-xl);
-            padding: 10px;
-            min-width: 200px;
-        }
-
-        .user-dropdown a {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 10px;
-            color: var(--dark);
-            text-decoration: none;
-            border-radius: 8px;
-            transition: var(--transition);
-        }
-
-        .user-dropdown a:hover {
-            background: var(--light);
-        }
-
-        .notification-bell {
-            position: relative;
-            cursor: pointer;
-        }
-
-        .notification-badge {
-            position: absolute;
-            top: -5px;
-            right: -5px;
-            background: var(--danger);
-            color: white;
-            border-radius: 50%;
-            width: 20px;
-            height: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 12px;
-        }
-
-        /* Content Sections */
         .section {
             display: none;
             animation: fadeIn 0.3s ease;
         }
+        .section.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        .section.active {
-            display: block;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .section-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+        /* Cards */
+        .card {
+            background: var(--bg-card);
+            border-radius: var(--radius);
+            padding: 20px;
             margin-bottom: 20px;
+            box-shadow: var(--shadow);
         }
-
-        .section-header h2 {
-            font-size: 24px;
-            color: var(--dark);
-            font-weight: 700;
-        }
-
-        /* Stats Grid */
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
         }
-
         .stat-card {
-            background: white;
-            padding: 25px;
+            background: var(--bg-card);
+            padding: 20px;
             border-radius: var(--radius);
             box-shadow: var(--shadow);
-            transition: var(--transition);
-            position: relative;
-            overflow: hidden;
-            cursor: pointer;
+            text-align: center;
         }
+        .stat-card h4 { color: var(--text-secondary); font-size: 14px; }
+        .stat-card p { font-size: 24px; font-weight: 700; color: var(--text-primary); }
 
-        .stat-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 4px;
-            background: linear-gradient(90deg, var(--primary), var(--secondary));
-            transform: scaleX(0);
-            transition: var(--transition);
-        }
-
-        .stat-card:hover {
-            transform: translateY(-5px);
-            box-shadow: var(--shadow-xl);
-        }
-
-        .stat-card:hover::before {
-            transform: scaleX(1);
-        }
-
-        .stat-icon {
-            width: 50px;
-            height: 50px;
+        /* Buttons */
+        .btn {
+            padding: 10px 20px;
+            border: none;
             border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 24px;
-            margin-bottom: 15px;
-        }
-
-        .stat-icon.income { background: #d1fae5; color: var(--success); }
-        .stat-icon.expense { background: #fee2e2; color: var(--danger); }
-        .stat-icon.balance { background: #dbeafe; color: var(--primary); }
-        .stat-icon.savings { background: #fef3c7; color: var(--warning); }
-
-        .stat-info h4 {
-            font-size: 14px;
-            color: var(--gray);
-            margin-bottom: 5px;
-        }
-
-        .stat-info p {
-            font-size: 28px;
-            font-weight: 700;
-            color: var(--dark);
-            margin-bottom: 5px;
-        }
-
-        .trend {
-            font-size: 14px;
             font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            font-size: 14px;
         }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-primary:hover { background: var(--primary-dark); transform: translateY(-2px); }
+        .btn-success { background: var(--success); color: white; }
+        .btn-danger { background: var(--danger); color: white; }
+        .btn-block { width: 100%; }
 
-        .trend.positive { color: var(--success); }
-        .trend.negative { color: var(--danger); }
-
-        /* Charts */
-        .charts-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
+        /* Forms */
+        .form-group { margin-bottom: 16px; }
+        .form-group label { display: block; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px; }
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 12px 14px;
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            font-size: 14px;
+            transition: var(--transition);
+            background: #f8fafc;
         }
-
-        .chart-card {
-            background: white;
-            padding: 25px;
-            border-radius: var(--radius);
-            box-shadow: var(--shadow);
-        }
-
-        .chart-card h3 {
-            font-size: 18px;
-            color: var(--dark);
-            margin-bottom: 20px;
-        }
+        .form-group input:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 3px rgba(99,102,241,0.1); }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 
         /* Tables */
         .table-container {
-            background: white;
+            background: var(--bg-card);
             border-radius: var(--radius);
-            box-shadow: var(--shadow);
             overflow: hidden;
+            box-shadow: var(--shadow);
         }
-
         .data-table {
             width: 100%;
             border-collapse: collapse;
         }
-
         .data-table th {
-            background: var(--primary);
-            color: white;
-            padding: 15px;
+            background: #f1f5f9;
+            padding: 14px 16px;
             text-align: left;
             font-weight: 600;
             font-size: 14px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
+            color: var(--text-secondary);
         }
-
         .data-table td {
-            padding: 15px;
-            border-bottom: 1px solid var(--border);
-            transition: var(--transition);
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--border-color);
         }
+        .data-table tr:hover td { background: #f8fafc; }
 
-        .data-table tr:hover td {
-            background: #f8fafc;
+        /* Stock Cards */
+        .stock-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 16px;
         }
-
-        .data-table tr:last-child td {
-            border-bottom: none;
-        }
-
-        .action-buttons {
-            display: flex;
-            gap: 5px;
-        }
-
-        .btn-action {
-            padding: 8px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: var(--transition);
-            font-size: 14px;
-        }
-
-        .btn-edit {
-            background: #dbeafe;
-            color: var(--primary);
-        }
-
-        .btn-edit:hover {
-            background: var(--primary);
-            color: white;
-        }
-
-        .btn-delete {
-            background: #fee2e2;
-            color: var(--danger);
-        }
-
-        .btn-delete:hover {
-            background: var(--danger);
-            color: white;
-        }
-
-        /* Buttons */
-        .btn {
-            padding: 12px 24px;
-            border: none;
-            border-radius: 12px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: var(--transition);
-            font-family: inherit;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .btn::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 0;
-            height: 0;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.3);
-            transform: translate(-50%, -50%);
-            transition: width 0.6s, height 0.6s;
-        }
-
-        .btn:hover::before {
-            width: 300px;
-            height: 300px;
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-            color: white;
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-lg);
-        }
-
-        .btn-success {
-            background: var(--success);
-            color: white;
-        }
-
-        .btn-danger {
-            background: var(--danger);
-            color: white;
-        }
-
-        /* Modal */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.5);
-            z-index: 2000;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .modal.active {
-            display: flex;
-        }
-
-        .modal-content {
-            background: white;
+        .stock-card {
+            background: var(--bg-card);
+            padding: 16px;
             border-radius: var(--radius);
-            padding: 30px;
-            max-width: 500px;
-            width: 90%;
-            max-height: 90vh;
-            overflow-y: auto;
-            animation: slideUp 0.3s ease;
+            box-shadow: var(--shadow);
+            border-left: 4px solid var(--success);
         }
-
-        @keyframes slideUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+        .stock-card.low-stock { border-left-color: var(--danger); }
+        .stock-card h4 { margin-bottom: 4px; }
+        .stock-card .badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
         }
+        .badge-success { background: #d1fae5; color: #065f46; }
+        .badge-danger { background: #fee2e2; color: #991b1b; }
 
         /* Notification */
-        .notification {
+        .notification-container {
             position: fixed;
             top: 20px;
             right: 20px;
-            padding: 15px 20px;
-            border-radius: 12px;
+            z-index: 9999;
+            max-width: 380px;
+            width: 100%;
+        }
+        .notification {
+            padding: 14px 18px;
+            border-radius: 14px;
             background: white;
-            box-shadow: var(--shadow-xl);
+            box-shadow: 0 12px 32px -8px rgba(0,0,0,0.12);
             display: flex;
             align-items: center;
             gap: 12px;
-            animation: slideInRight 0.3s ease;
-            z-index: 3000;
+            animation: slideIn 0.4s ease;
+            border-left: 5px solid var(--primary);
         }
+        @keyframes slideIn { from { opacity: 0; transform: translateX(60px); } to { opacity: 1; transform: translateX(0); } }
 
-        @keyframes slideInRight {
-            from {
-                opacity: 0;
-                transform: translateX(100px);
-            }
-            to {
-                opacity: 1;
-                transform: translateX(0);
-            }
-        }
-
-        /* Mobile Responsive */
+        /* Responsive */
         @media (max-width: 768px) {
-            .sidebar {
-                transform: translateX(-100%);
-            }
-
-            .sidebar.active {
-                transform: translateX(0);
-            }
-
-            .main-content {
-                margin-left: 0;
-            }
-
-            .menu-toggle {
-                display: block;
-            }
-
-            .stats-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .charts-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .section-header {
-                flex-direction: column;
-                gap: 10px;
-            }
+            .sidebar { transform: translateX(-100%); width: 280px; }
+            .sidebar.active { transform: translateX(0); }
+            .main-content { margin-left: 0; }
+            .menu-toggle { display: block; background: none; border: none; font-size: 24px; cursor: pointer; }
+            .stats-grid { grid-template-columns: 1fr 1fr; }
+            .form-row { grid-template-columns: 1fr; }
+            .stock-grid { grid-template-columns: 1fr; }
         }
     </style>
 </head>
 <body>
     <!-- Sidebar -->
     <aside class="sidebar" id="sidebar">
-        <div class="sidebar-header">
-            <div class="sidebar-logo">
-                <i class="fas fa-calculator"></i>
-            </div>
-            <h3 data-en="Accounting System" data-bn="হিসাবের খাতা">হিসাবের খাতা</h3>
+        <div class="sidebar-logo">
+            <i class="fas fa-store-alt"></i>
+            <h3>হিসাবের খাতা</h3>
+            <p id="businessName">ব্যবসা</p>
         </div>
         
-        <nav class="sidebar-nav">
-            <li class="nav-item">
-                <a class="nav-link active" data-section="overview" onclick="showSection('overview')">
-                    <i class="fas fa-chart-pie"></i>
-                    <span data-en="Dashboard" data-bn="ড্যাশবোর্ড">ড্যাশবোর্ড</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" data-section="transactions" onclick="showSection('transactions')">
-                    <i class="fas fa-exchange-alt"></i>
-                    <span data-en="Transactions" data-bn="লেনদেন">লেনদেন</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" data-section="income" onclick="showSection('income')">
-                    <i class="fas fa-arrow-down"></i>
-                    <span data-en="Income" data-bn="আয়">আয়</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" data-section="expenses" onclick="showSection('expenses')">
-                    <i class="fas fa-arrow-up"></i>
-                    <span data-en="Expenses" data-bn="ব্যয়">ব্যয়</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" data-section="reports" onclick="showSection('reports')">
-                    <i class="fas fa-file-alt"></i>
-                    <span data-en="Reports" data-bn="রিপোর্ট">রিপোর্ট</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" data-section="settings" onclick="showSection('settings')">
-                    <i class="fas fa-cog"></i>
-                    <span data-en="Settings" data-bn="সেটিংস">সেটিংস</span>
-                </a>
-            </li>
+        <nav>
+            <a class="nav-link active" data-section="dashboard" onclick="showSection('dashboard')">
+                <i class="fas fa-th-large"></i> ডেসবোর্ড
+            </a>
+            <a class="nav-link" data-section="purchases" onclick="loadSection('purchases')">
+                <i class="fas fa-shopping-cart"></i> ক্রয়
+            </a>
+            <a class="nav-link" data-section="sales" onclick="loadSection('sales')">
+                <i class="fas fa-cash-register"></i> বিক্রি
+            </a>
+            <a class="nav-link" data-section="expenses" onclick="loadSection('expenses')">
+                <i class="fas fa-receipt"></i> খরচ
+            </a>
+            <a class="nav-link" data-section="products" onclick="loadSection('products')">
+                <i class="fas fa-boxes"></i> পণ্য/স্টক
+            </a>
+            <a class="nav-link" data-section="reports" onclick="loadSection('reports')">
+                <i class="fas fa-chart-pie"></i> রিপোর্ট
+            </a>
+            <a class="nav-link" data-section="profile" onclick="showSection('profile')">
+                <i class="fas fa-user"></i> প্রোফাইল
+            </a>
         </nav>
         
         <div class="sidebar-footer">
-            <button class="btn btn-danger" style="width: 100%;" onclick="logout()">
-                <i class="fas fa-sign-out-alt"></i>
-                <span data-en="Logout" data-bn="লগআউট">লগআউট</span>
+            <button class="btn-logout" onclick="logout()">
+                <i class="fas fa-sign-out-alt"></i> লগআউট
             </button>
         </div>
     </aside>
 
     <!-- Main Content -->
     <main class="main-content">
-        <!-- Top Bar -->
         <header class="top-bar">
-            <button class="menu-toggle" onclick="toggleSidebar()">
-                <i class="fas fa-bars"></i>
-            </button>
-            
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <button class="menu-toggle" onclick="toggleSidebar()">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <span class="page-title" id="pageTitle">ডেসবোর্ড</span>
+            </div>
             <div class="user-info">
-                <div class="notification-bell" onclick="showNotifications()">
-                    <i class="fas fa-bell" style="font-size: 24px; color: var(--gray);"></i>
-                    <span class="notification-badge" id="notificationCount">0</span>
-                </div>
-                <div class="user-avatar" id="userAvatar">
-                    U
-                    <div class="user-dropdown">
-                        <a href="#" onclick="showSection('settings')">
-                            <i class="fas fa-user"></i> প্রোফাইল
-                        </a>
-                        <a href="#" onclick="logout()">
-                            <i class="fas fa-sign-out-alt"></i> লগআউট
-                        </a>
-                    </div>
-                </div>
+                <div class="user-avatar" id="userAvatar">U</div>
                 <div>
                     <div id="userName" style="font-weight: 600;">User</div>
-                    <div id="userEmail" style="font-size: 12px; color: var(--gray);">user@email.com</div>
+                    <div style="font-size: 12px; color: var(--text-secondary);" id="userEmail">user@email.com</div>
                 </div>
             </div>
         </header>
 
-        <!-- Overview Section -->
-        <section id="overview" class="section active">
-            <div class="section-header">
-                <h2 data-en="Dashboard Overview" data-bn="ড্যাশবোর্ড ওভারভিউ">ড্যাশবোর্ড ওভারভিউ</h2>
-                <button class="btn btn-primary" onclick="showAddTransaction()">
-                    <i class="fas fa-plus"></i>
-                    <span data-en="New Transaction" data-bn="নতুন লেনদেন">নতুন লেনদেন</span>
-                </button>
+        <!-- Dashboard Section (Native) -->
+        <section id="dashboard" class="section active">
+            <div class="stats-grid" id="dashboardStats">
+                <div class="stat-card"><h4>মোট বিক্রি</h4><p id="totalSales">৳0</p></div>
+                <div class="stat-card"><h4>মোট ক্রয়</h4><p id="totalPurchases">৳0</p></div>
+                <div class="stat-card"><h4>মোট খরচ</h4><p id="totalExpenses">৳0</p></div>
+                <div class="stat-card"><h4>মোট লাভ</h4><p id="totalProfit">৳0</p></div>
+                <div class="stat-card"><h4>মোট বাকি</h4><p id="totalDue">৳0</p></div>
+                <div class="stat-card"><h4>স্টক ভ্যালু</h4><p id="stockValue">৳0</p></div>
             </div>
-            
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <div class="stat-icon income">
-                        <i class="fas fa-arrow-down"></i>
-                    </div>
-                    <div class="stat-info">
-                        <h4 data-en="Total Income" data-bn="মোট আয়">মোট আয়</h4>
-                        <p id="totalIncome">৳0</p>
-                        <span class="trend positive">+12.5%</span>
-                    </div>
-                </div>
-                
-                <div class="stat-card">
-                    <div class="stat-icon expense">
-                        <i class="fas fa-arrow-up"></i>
-                    </div>
-                    <div class="stat-info">
-                        <h4 data-en="Total Expenses" data-bn="মোট ব্যয়">মোট ব্যয়</h4>
-                        <p id="totalExpenses">৳0</p>
-                        <span class="trend negative">-5.2%</span>
-                    </div>
-                </div>
-                
-                <div class="stat-card">
-                    <div class="stat-icon balance">
-                        <i class="fas fa-wallet"></i>
-                    </div>
-                    <div class="stat-info">
-                        <h4 data-en="Balance" data-bn="ব্যালেন্স">ব্যালেন্স</h4>
-                        <p id="balance">৳0</p>
-                        <span class="trend">বর্তমান</span>
-                    </div>
-                </div>
-                
-                <div class="stat-card">
-                    <div class="stat-icon savings">
-                        <i class="fas fa-piggy-bank"></i>
-                    </div>
-                    <div class="stat-info">
-                        <h4 data-en="Savings" data-bn="সঞ্চয়">সঞ্চয়</h4>
-                        <p id="savings">৳0</p>
-                        <span class="trend positive">টার্গেট ৳100,000</span>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="charts-grid">
-                <div class="chart-card">
-                    <h3 data-en="Income vs Expenses" data-bn="আয় বনাম ব্যয়">আয় বনাম ব্যয়</h3>
-                    <canvas id="incomeExpenseChart"></canvas>
-                </div>
-                <div class="chart-card">
-                    <h3 data-en="Monthly Trend" data-bn="মাসিক ট্রেন্ড">মাসিক ট্রেন্ড</h3>
-                    <canvas id="monthlyTrendChart"></canvas>
-                </div>
-            </div>
-            
-            <div class="table-container">
-                <div style="padding: 20px; border-bottom: 1px solid var(--border);">
-                    <h3 data-en="Recent Transactions" data-bn="সাম্প্রতিক লেনদেন">সাম্প্রতিক লেনদেন</h3>
-                </div>
-                <div id="recentTransactions"></div>
+            <div class="card">
+                <h3 style="margin-bottom: 12px;">📊 সাম্প্রতিক লেনদেন</h3>
+                <div id="recentTransactions">লোড হচ্ছে...</div>
             </div>
         </section>
 
-        <!-- Transactions Section -->
-        <section id="transactions" class="section">
-            <div class="section-header">
-                <h2 data-en="All Transactions" data-bn="সকল লেনদেন">সকল লেনদেন</h2>
-                <button class="btn btn-primary" onclick="showAddTransaction()">
-                    <i class="fas fa-plus"></i>
-                    <span data-en="Add Transaction" data-bn="লেনদেন যোগ করুন">লেনদেন যোগ করুন</span>
-                </button>
-            </div>
-            
-            <div class="table-container">
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th data-en="Date" data-bn="তারিখ">তারিখ</th>
-                            <th data-en="Description" data-bn="বিবরণ">বিবরণ</th>
-                            <th data-en="Category" data-bn="ক্যাটাগরি">ক্যাটাগরি</th>
-                            <th data-en="Type" data-bn="ধরন">ধরন</th>
-                            <th data-en="Amount" data-bn="পরিমাণ">পরিমাণ</th>
-                            <th data-en="Actions" data-bn="অ্যাকশন">অ্যাকশন</th>
-                        </tr>
-                    </thead>
-                    <tbody id="transactionsList"></tbody>
-                </table>
-            </div>
-        </section>
-
-        <!-- Income Section -->
-        <section id="income" class="section">
-            <div class="section-header">
-                <h2 data-en="Income Records" data-bn="আয়ের রেকর্ড">আয়ের রেকর্ড</h2>
-                <button class="btn btn-success" onclick="showAddTransaction('income')">
-                    <i class="fas fa-plus"></i>
-                    <span data-en="Add Income" data-bn="নতুন আয়">নতুন আয়</span>
-                </button>
-            </div>
-            
-            <div class="table-container">
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th data-en="Date" data-bn="তারিখ">তারিখ</th>
-                            <th data-en="Description" data-bn="বিবরণ">বিবরণ</th>
-                            <th data-en="Category" data-bn="ক্যাটাগরি">ক্যাটাগরি</th>
-                            <th data-en="Amount" data-bn="পরিমাণ">পরিমাণ</th>
-                            <th data-en="Actions" data-bn="অ্যাকশন">অ্যাকশন</th>
-                        </tr>
-                    </thead>
-                    <tbody id="incomeList"></tbody>
-                </table>
-            </div>
-        </section>
-
-        <!-- Expenses Section -->
-        <section id="expenses" class="section">
-            <div class="section-header">
-                <h2 data-en="Expense Records" data-bn="ব্যয়ের রেকর্ড">ব্যয়ের রেকর্ড</h2>
-                <button class="btn btn-danger" onclick="showAddTransaction('expense')">
-                    <i class="fas fa-plus"></i>
-                    <span data-en="Add Expense" data-bn="নতুন ব্যয়">নতুন ব্যয়</span>
-                </button>
-            </div>
-            
-            <div class="table-container">
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th data-en="Date" data-bn="তারিখ">তারিখ</th>
-                            <th data-en="Description" data-bn="বিবরণ">বিবরণ</th>
-                            <th data-en="Category" data-bn="ক্যাটাগরি">ক্যাটাগরি</th>
-                            <th data-en="Amount" data-bn="পরিমাণ">পরিমাণ</th>
-                            <th data-en="Actions" data-bn="অ্যাকশন">অ্যাকশন</th>
-                        </tr>
-                    </thead>
-                    <tbody id="expensesList"></tbody>
-                </table>
-            </div>
-        </section>
-
-        <!-- Reports Section -->
-        <section id="reports" class="section">
-            <div class="section-header">
-                <h2 data-en="Reports" data-bn="রিপোর্ট">রিপোর্ট</h2>
-            </div>
-            
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
-                <div class="chart-card" style="text-align: center;">
-                    <i class="fas fa-file-pdf" style="font-size: 48px; color: var(--danger); margin-bottom: 15px;"></i>
-                    <h3 data-en="Monthly Report" data-bn="মাসিক রিপোর্ট">মাসিক রিপোর্ট</h3>
-                    <p style="color: var(--gray); margin-bottom: 15px;" data-en="Complete monthly income and expense report" data-bn="সম্পূর্ণ মাসের আয়-ব্যয়ের রিপোর্ট">সম্পূর্ণ মাসের আয়-ব্যয়ের রিপোর্ট</p>
-                    <button class="btn btn-primary" onclick="generateMonthlyReport()">
-                        <i class="fas fa-download"></i>
-                        <span data-en="Generate" data-bn="তৈরি করুন">তৈরি করুন</span>
-                    </button>
+        <!-- Profile Section (Native) -->
+        <section id="profile" class="section">
+            <div class="card" style="max-width: 500px; margin: 0 auto;">
+                <h2 style="text-align: center; margin-bottom: 20px;">প্রোফাইল</h2>
+                <div style="text-align: center; margin-bottom: 20px;">
+                    <div class="user-avatar" style="width: 80px; height: 80px; font-size: 32px; margin: 0 auto;" id="profileAvatar">U</div>
                 </div>
-                
-                <div class="chart-card" style="text-align: center;">
-                    <i class="fas fa-file-excel" style="font-size: 48px; color: var(--success); margin-bottom: 15px;"></i>
-                    <h3 data-en="Yearly Report" data-bn="বার্ষিক রিপোর্ট">বার্ষিক রিপোর্ট</h3>
-                    <p style="color: var(--gray); margin-bottom: 15px;" data-en="Complete yearly financial report" data-bn="সম্পূর্ণ বছরের আর্থিক রিপোর্ট">সম্পূর্ণ বছরের আর্থিক রিপোর্ট</p>
-                    <button class="btn btn-success" onclick="generateYearlyReport()">
-                        <i class="fas fa-download"></i>
-                        <span data-en="Generate" data-bn="তৈরি করুন">তৈরি করুন</span>
-                    </button>
-                </div>
-                
-                <div class="chart-card" style="text-align: center;">
-                    <i class="fas fa-chart-line" style="font-size: 48px; color: var(--primary); margin-bottom: 15px;"></i>
-                    <h3 data-en="Custom Report" data-bn="কাস্টম রিপোর্ট">কাস্টম রিপোর্ট</h3>
-                    <p style="color: var(--gray); margin-bottom: 15px;" data-en="Custom time period report" data-bn="নির্দিষ্ট সময়ের কাস্টম রিপোর্ট">নির্দিষ্ট সময়ের কাস্টম রিপোর্ট</p>
-                    <button class="btn btn-primary" onclick="generateCustomReport()">
-                        <i class="fas fa-download"></i>
-                        <span data-en="Generate" data-bn="তৈরি করুন">তৈরি করুন</span>
-                    </button>
-                </div>
+                <div class="form-group"><label>নাম</label><input type="text" id="profileName" disabled></div>
+                <div class="form-group"><label>ইমেইল</label><input type="email" id="profileEmail" disabled></div>
+                <div class="form-group"><label>ব্যবসার নাম</label><input type="text" id="profileBusiness" disabled></div>
             </div>
         </section>
 
-        <!-- Settings Section -->
-        <section id="settings" class="section">
-            <div class="section-header">
-                <h2 data-en="Settings" data-bn="সেটিংস">সেটিংস</h2>
-            </div>
-            
-            <div class="chart-card">
-                <form id="settingsForm">
-                    <div class="form-group">
-                        <label data-en="Full Name" data-bn="সম্পূর্ণ নাম">সম্পূর্ণ নাম</label>
-                        <input type="text" id="settingsName" class="form-control">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label data-en="Business Name" data-bn="ব্যবসার নাম">ব্যবসার নাম</label>
-                        <input type="text" id="settingsBusinessName" class="form-control">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label data-en="Mobile Number" data-bn="মোবাইল নম্বর">মোবাইল নম্বর</label>
-                        <input type="tel" id="settingsMobile" class="form-control">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label data-en="Currency" data-bn="মুদ্রা">মুদ্রা</label>
-                        <select id="settingsCurrency" class="form-control">
-                            <option value="BDT">টাকা (৳)</option>
-                            <option value="USD">ডলার ($)</option>
-                            <option value="EUR">ইউরো (€)</option>
-                        </select>
-                    </div>
-                    
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-save"></i>
-                        <span data-en="Save Settings" data-bn="সেটিংস সেভ করুন">সেটিংস সেভ করুন</span>
-                    </button>
-                </form>
-            </div>
-        </section>
+        <!-- Dynamic Sections (Loaded via Fetch) -->
+        <div id="dynamicContent"></div>
     </main>
 
-    <!-- Add Transaction Modal -->
-    <div id="transactionModal" class="modal">
-        <div class="modal-content">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                <h3 data-en="Add Transaction" data-bn="নতুন লেনদেন">নতুন লেনদেন</h3>
-                <button class="btn-action btn-delete" onclick="closeModal()">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            
-            <form id="addTransactionForm">
-                <div class="form-group">
-                    <label data-en="Type" data-bn="ধরন">ধরন</label>
-                    <select id="transactionType" class="form-control">
-                        <option value="income" data-en="Income" data-bn="আয়">আয়</option>
-                        <option value="expense" data-en="Expense" data-bn="ব্যয়">ব্যয়</option>
-                    </select>
-                </div>
-                
-                <div class="form-group">
-                    <label data-en="Amount" data-bn="পরিমাণ">পরিমাণ</label>
-                    <input type="number" id="transactionAmount" class="form-control" required>
-                </div>
-                
-                <div class="form-group">
-                    <label data-en="Description" data-bn="বিবরণ">বিবরণ</label>
-                    <input type="text" id="transactionDescription" class="form-control" required>
-                </div>
-                
-                <div class="form-group">
-                    <label data-en="Category" data-bn="ক্যাটাগরি">ক্যাটাগরি</label>
-                    <select id="transactionCategory" class="form-control">
-                        <option value="salary">বেতন</option>
-                        <option value="business">ব্যবসা</option>
-                        <option value="food">খাবার</option>
-                        <option value="transport">পরিবহন</option>
-                        <option value="entertainment">বিনোদন</option>
-                        <option value="other">অন্যান্য</option>
-                    </select>
-                </div>
-                
-                <div class="form-group">
-                    <label data-en="Date" data-bn="তারিখ">তারিখ</label>
-                    <input type="date" id="transactionDate" class="form-control">
-                </div>
-                
-                <button type="submit" class="btn btn-primary" style="width: 100%;">
-                    <i class="fas fa-plus"></i>
-                    <span data-en="Add Transaction" data-bn="লেনদেন যোগ করুন">লেনদেন যোগ করুন</span>
-                </button>
-            </form>
-        </div>
-    </div>
+    <div class="notification-container" id="notificationContainer"></div>
 
+    <script src="firebase-config.js"></script>
+    <script src="shared.js"></script>
     <script>
-        // Firebase Configuration
-        const firebaseConfig = {
-            apiKey: "AIzaSyB16ZrdZ2IY_R8aSZipz-O6SelEblngJLE",
-            authDomain: "marketing-calculation.firebaseapp.com",
-            databaseURL: "https://marketing-calculation-default-rtdb.firebaseio.com",
-            projectId: "marketing-calculation",
-            storageBucket: "marketing-calculation.firebasestorage.app",
-            messagingSenderId: "371475369216",
-            appId: "1:371475369216:web:3aff3d68b707f65c1e77e5",
-            measurementId: "G-79164G85DX"
-        };
+        // 🔐 Security Check
+        if (!auth.currentUser) {
+            window.location.href = 'login.html';
+        }
 
-        // Initialize Firebase
-        firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
-        const database = firebase.database();
+        const uid = auth.currentUser.uid;
+        let userData = {};
+        let allProducts = {};
+        let allPurchases = {};
+        let allSales = {};
+        let allExpenses = {};
 
-        let currentUser = null;
-        let currentLanguage = 'bn';
-        let charts = {};
-
-        // Check authentication state
-        auth.onAuthStateChanged(async (user) => {
-            if (user) {
-                currentUser = user;
-                
-                // Check if user is admin
-                const userSnapshot = await database.ref('users/' + user.uid).once('value');
-                const userData = userSnapshot.val();
-                
-                if (userData && userData.role === 'admin') {
-                    window.location.href = 'admin-dashboard.html';
-                    return;
-                }
-                
-                // Load user data
-                loadUserData(userData);
-                loadTransactions();
-                loadCharts();
-                
-                // Save to localStorage for offline
-                localStorage.setItem('userData', JSON.stringify({
-                    uid: user.uid,
-                    email: user.email,
-                    name: userData?.name || user.email.split('@')[0],
-                    businessName: userData?.businessName || '',
-                    mobileNumber: userData?.mobileNumber || '',
-                    role: userData?.role || 'user'
-                }));
-            } else {
-                window.location.href = 'auth.html';
-            }
-        });
-
-        // Load user data
-        function loadUserData(userData) {
-            if (!userData) return;
-            
+        // ========== Load User Data ==========
+        async function loadUserData() {
+            const snap = await database.ref('users/' + uid).once('value');
+            userData = snap.val() || {};
             document.getElementById('userName').textContent = userData.name || 'User';
             document.getElementById('userEmail').textContent = userData.email || '';
-            document.getElementById('userAvatar').textContent = (userData.name || 'U').charAt(0).toUpperCase();
-            
-            // Load settings
-            document.getElementById('settingsName').value = userData.name || '';
-            document.getElementById('settingsBusinessName').value = userData.businessName || '';
-            document.getElementById('settingsMobile').value = userData.mobileNumber || '';
-            document.getElementById('settingsCurrency').value = userData.settings?.currency || 'BDT';
+            document.getElementById('businessName').textContent = userData.businessName || 'ব্যবসা';
+            document.getElementById('profileName').value = userData.name || '';
+            document.getElementById('profileEmail').value = userData.email || '';
+            document.getElementById('profileBusiness').value = userData.businessName || '';
+            document.getElementById('userAvatar').textContent = (userData.name || 'U')[0].toUpperCase();
+            document.getElementById('profileAvatar').textContent = (userData.name || 'U')[0].toUpperCase();
         }
 
-        // Load transactions
-        function loadTransactions() {
-            if (!currentUser) return;
-            
-            const transactionsRef = database.ref('transactions/' + currentUser.uid);
-            
-            // Real-time listener
-            transactionsRef.on('value', (snapshot) => {
-                const transactions = snapshot.val();
-                const transactionsList = document.getElementById('transactionsList');
-                const incomeList = document.getElementById('incomeList');
-                const expensesList = document.getElementById('expensesList');
-                const recentTransactions = document.getElementById('recentTransactions');
-                
-                transactionsList.innerHTML = '';
-                incomeList.innerHTML = '';
-                expensesList.innerHTML = '';
-                recentTransactions.innerHTML = '';
-                
-                let totalIncome = 0;
-                let totalExpenses = 0;
-                
-                if (transactions) {
-                    const transactionArray = Object.entries(transactions).map(([id, data]) => ({
-                        id,
-                        ...data
-                    }));
-                    
-                    // Sort by date
-                    transactionArray.sort((a, b) => b.timestamp - a.timestamp);
-                    
-                    transactionArray.forEach(transaction => {
-                        const date = new Date(transaction.timestamp).toLocaleDateString();
-                        const amount = transaction.amount;
-                        
-                        if (transaction.type === 'income') {
-                            totalIncome += amount;
-                        } else {
-                            totalExpenses += amount;
-                        }
-                        
-                        const rowHTML = `
-                            <tr>
-                                <td>${date}</td>
-                                <td>${transaction.description}</td>
-                                <td>${transaction.category || 'other'}</td>
-                                <td>
-                                    <span class="badge ${transaction.type === 'income' ? 'badge-success' : 'badge-danger'}">
-                                        ${transaction.type === 'income' ? 'আয়' : 'ব্যয়'}
-                                    </span>
-                                </td>
-                                <td>৳${amount}</td>
-                                <td>
-                                    <div class="action-buttons">
-                                        <button class="btn-action btn-edit" onclick="editTransaction('${transaction.id}')">
-                                            <i class="fas fa-edit"></i>
-                                        </button>
-                                        <button class="btn-action btn-delete" onclick="deleteTransaction('${transaction.id}')">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-                        `;
-                        
-                        transactionsList.innerHTML += rowHTML;
-                        
-                        if (transaction.type === 'income') {
-                            incomeList.innerHTML += rowHTML;
-                        } else {
-                            expensesList.innerHTML += rowHTML;
-                        }
-                        
-                        // Recent transactions (last 5)
-                        if (transactionArray.indexOf(transaction) < 5) {
-                            recentTransactions.innerHTML += `
-                                <div style="padding: 15px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
-                                    <div>
-                                        <div style="font-weight: 600;">${transaction.description}</div>
-                                        <div style="font-size: 12px; color: var(--gray);">${date}</div>
-                                    </div>
-                                    <div style="font-weight: 600; color: ${transaction.type === 'income' ? 'var(--success)' : 'var(--danger)'};">
-                                        ${transaction.type === 'income' ? '+' : '-'}৳${amount}
-                                    </div>
-                                </div>
-                            `;
-                        }
-                    });
-                }
-                
-                // Update stats
-                document.getElementById('totalIncome').textContent = '৳' + totalIncome;
-                document.getElementById('totalExpenses').textContent = '৳' + totalExpenses;
-                document.getElementById('balance').textContent = '৳' + (totalIncome - totalExpenses);
-                document.getElementById('savings').textContent = '৳' + (totalIncome - totalExpenses);
-                
-                // Save to localStorage for offline
-                localStorage.setItem('transactions', JSON.stringify(transactions));
+        // ========== Load All Data (Realtime) ==========
+        function loadAllData() {
+            database.ref('products/' + uid).on('value', snap => {
+                allProducts = snap.val() || {};
+                updateStats();
             });
-            
-            // Offline support
-            database.ref('.info/connected').on('value', (snapshot) => {
-                if (snapshot.val() === false) {
-                    // Offline - load from localStorage
-                    const localTransactions = localStorage.getItem('transactions');
-                    if (localTransactions) {
-                        // Use local data
-                    }
-                }
+            database.ref('purchases/' + uid).on('value', snap => {
+                allPurchases = snap.val() || {};
+                updateStats();
+            });
+            database.ref('sales/' + uid).on('value', snap => {
+                allSales = snap.val() || {};
+                updateStats();
+                loadRecentTransactions();
+            });
+            database.ref('expenses/' + uid).on('value', snap => {
+                allExpenses = snap.val() || {};
+                updateStats();
             });
         }
 
-        // Load charts
-        function loadCharts() {
-            // Income vs Expense Chart
-            const ctx1 = document.getElementById('incomeExpenseChart').getContext('2d');
-            charts.incomeExpense = new Chart(ctx1, {
-                type: 'doughnut',
-                data: {
-                    labels: ['আয়', 'ব্যয়'],
-                    datasets: [{
-                        data: [0, 0],
-                        backgroundColor: ['#10b981', '#ef4444'],
-                        borderWidth: 0
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            position: 'bottom'
-                        }
-                    }
-                }
-            });
-            
-            // Monthly Trend Chart
-            const ctx2 = document.getElementById('monthlyTrendChart').getContext('2d');
-            charts.monthlyTrend = new Chart(ctx2, {
-                type: 'line',
-                data: {
-                    labels: ['জানুয়ারি', 'ফেব্রুয়ারি', 'মার্চ', 'এপ্রিল', 'মে', 'জুন'],
-                    datasets: [{
-                        label: 'আয়',
-                        data: [0, 0, 0, 0, 0, 0],
-                        borderColor: '#10b981',
-                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
-                        tension: 0.4
-                    }, {
-                        label: 'ব্যয়',
-                        data: [0, 0, 0, 0, 0, 0],
-                        borderColor: '#ef4444',
-                        backgroundColor: 'rgba(239, 68, 68, 0.1)',
-                        tension: 0.4
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            position: 'bottom'
-                        }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true
-                        }
-                    }
-                }
-            });
-            
-            updateCharts();
+        // ========== Section Navigation ==========
+        function showSection(id) {
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+            document.querySelector(`[data-section="${id}"]`).classList.add('active');
+            document.getElementById('pageTitle').textContent = document.querySelector(`[data-section="${id}"]`).textContent.trim();
+            if (window.innerWidth <= 768) document.getElementById('sidebar').classList.remove('active');
+            // Hide dynamic content
+            document.getElementById('dynamicContent').innerHTML = '';
         }
 
-        // Update charts
-        function updateCharts() {
-            if (!charts.incomeExpense || !charts.monthlyTrend) return;
-            
-            // Update with real data
-            const totalIncome = parseFloat(document.getElementById('totalIncome').textContent.replace('৳', '')) || 0;
-            const totalExpenses = parseFloat(document.getElementById('totalExpenses').textContent.replace('৳', '')) || 0;
-            
-            charts.incomeExpense.data.datasets[0].data = [totalIncome, totalExpenses];
-            charts.incomeExpense.update();
-        }
-
-        // Show section
-        function showSection(sectionId) {
-            document.querySelectorAll('.section').forEach(section => {
-                section.classList.remove('active');
+        async function loadSection(sectionName) {
+            showSection('dashboard'); // Reset active section
+            const response = await fetch(sectionName + '.html');
+            const html = await response.text();
+            document.getElementById('dynamicContent').innerHTML = html;
+            // Execute scripts in the loaded HTML
+            const scripts = document.getElementById('dynamicContent').querySelectorAll('script');
+            scripts.forEach(script => {
+                const newScript = document.createElement('script');
+                newScript.textContent = script.textContent;
+                document.body.appendChild(newScript);
             });
-            document.getElementById(sectionId).classList.add('active');
-            
-            document.querySelectorAll('.nav-link').forEach(link => {
-                link.classList.remove('active');
-            });
-            document.querySelector(`[data-section="${sectionId}"]`).classList.add('active');
-            
+            // Update page title
+            document.getElementById('pageTitle').textContent = sectionName.charAt(0).toUpperCase() + sectionName.slice(1);
             // Close sidebar on mobile
-            if (window.innerWidth <= 768) {
-                document.getElementById('sidebar').classList.remove('active');
-            }
+            if (window.innerWidth <= 768) document.getElementById('sidebar').classList.remove('active');
         }
 
-        // Toggle sidebar
         function toggleSidebar() {
             document.getElementById('sidebar').classList.toggle('active');
         }
 
-        // Show add transaction modal
-        function showAddTransaction(type = null) {
-            if (type) {
-                document.getElementById('transactionType').value = type;
-            }
-            document.getElementById('transactionModal').classList.add('active');
+        // ========== Dashboard Stats ==========
+        function updateStats() {
+            let totalSales = 0, totalPurchases = 0, totalExpenses = 0, totalDue = 0;
+            Object.values(allSales).forEach(s => { totalSales += s.total || 0; if (s.payment === 'due') totalDue += s.dueAmount || 0; });
+            Object.values(allPurchases).forEach(p => totalPurchases += p.total || 0);
+            Object.values(allExpenses).forEach(e => totalExpenses += e.amount || 0);
+            const profit = totalSales - totalPurchases - totalExpenses;
+            const stockValue = Object.values(allProducts).reduce((acc, p) => acc + (p.stock || 0) * (p.purchasePrice || 0), 0);
+            
+            document.getElementById('totalSales').textContent = '৳' + totalSales.toFixed(2);
+            document.getElementById('totalPurchases').textContent = '৳' + totalPurchases.toFixed(2);
+            document.getElementById('totalExpenses').textContent = '৳' + totalExpenses.toFixed(2);
+            document.getElementById('totalProfit').textContent = '৳' + profit.toFixed(2);
+            document.getElementById('totalDue').textContent = '৳' + totalDue.toFixed(2);
+            document.getElementById('stockValue').textContent = '৳' + stockValue.toFixed(2);
         }
 
-        // Close modal
-        function closeModal() {
-            document.getElementById('transactionModal').classList.remove('active');
+        // ========== Recent Transactions ==========
+        function loadRecentTransactions() {
+            const container = document.getElementById('recentTransactions');
+            let html = '';
+            const all = [];
+            Object.values(allSales).forEach(s => all.push({ type: 'বিক্রি', desc: s.productName, amount: s.total, time: s.timestamp }));
+            Object.values(allPurchases).forEach(p => all.push({ type: 'ক্রয়', desc: p.productName, amount: p.total, time: p.timestamp }));
+            Object.values(allExpenses).forEach(e => all.push({ type: 'খরচ', desc: e.description, amount: e.amount, time: e.timestamp }));
+            all.sort((a, b) => (b.time || 0) - (a.time || 0));
+            const recent = all.slice(0, 10);
+            recent.forEach(item => {
+                html += `
+                    <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #e2e8f0;">
+                        <span><strong>${item.type}</strong> - ${item.desc}</span>
+                        <span>৳${item.amount} | ${getBangladeshTime(item.time)}</span>
+                    </div>
+                `;
+            });
+            container.innerHTML = html || 'কোনো লেনদেন নেই';
         }
 
-        // Add transaction
-        document.getElementById('addTransactionForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            const type = document.getElementById('transactionType').value;
-            const amount = parseFloat(document.getElementById('transactionAmount').value);
-            const description = document.getElementById('transactionDescription').value;
-            const category = document.getElementById('transactionCategory').value;
-            const date = document.getElementById('transactionDate').value;
-            
-            if (!amount || !description) {
-                showNotification('সব তথ্য পূরণ করুন', 'error');
-                return;
-            }
-            
-            try {
-                const transactionRef = database.ref('transactions/' + currentUser.uid).push();
-                await transactionRef.set({
-                    type: type,
-                    amount: amount,
-                    description: description,
-                    category: category,
-                    timestamp: date ? new Date(date).getTime() : firebase.database.ServerValue.TIMESTAMP
-                });
-                
-                closeModal();
-                document.getElementById('addTransactionForm').reset();
-                showNotification('লেনদেন যোগ করা হয়েছে', 'success');
-            } catch (error) {
-                console.error('Error adding transaction:', error);
-                showNotification(error.message, 'error');
-            }
-        });
-
-        // Edit transaction
-        function editTransaction(transactionId) {
-            // Implement edit functionality
-            showNotification('এডিট ফিচার শীঘ্রই আসছে', 'info');
-        }
-
-        // Delete transaction
-        async function deleteTransaction(transactionId) {
-            if (!confirm('আপনি কি নিশ্চিতভাবে এই লেনদেনটি ডিলিট করতে চান?')) {
-                return;
-            }
-            
-            try {
-                await database.ref('transactions/' + currentUser.uid + '/' + transactionId).remove();
-                showNotification('লেনদেন ডিলিট করা হয়েছে', 'success');
-            } catch (error) {
-                console.error('Error deleting transaction:', error);
-                showNotification(error.message, 'error');
-            }
-        }
-
-        // Save settings
-        document.getElementById('settingsForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            const name = document.getElementById('settingsName').value;
-            const businessName = document.getElementById('settingsBusinessName').value;
-            const mobile = document.getElementById('settingsMobile').value;
-            const currency = document.getElementById('settingsCurrency').value;
-            
-            try {
-                await database.ref('users/' + currentUser.uid).update({
-                    name: name,
-                    businessName: businessName,
-                    mobileNumber: mobile,
-                    'settings/currency': currency
-                });
-                
-                showNotification('সেটিংস সেভ করা হয়েছে', 'success');
-            } catch (error) {
-                console.error('Error saving settings:', error);
-                showNotification(error.message, 'error');
-            }
-        });
-
-        // Show notification
-        function showNotification(message, type = 'success') {
-            const notification = document.createElement('div');
-            notification.className = 'notification';
-            notification.style.borderLeft = `4px solid ${type === 'success' ? 'var(--success)' : type === 'error' ? 'var(--danger)' : 'var(--primary)'}`;
-            notification.innerHTML = `
-                <i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle'}" 
-                   style="color: ${type === 'success' ? 'var(--success)' : type === 'error' ? 'var(--danger)' : 'var(--primary)'};">
-                </i>
-                <span>${message}</span>
-            `;
-            document.body.appendChild(notification);
-            
-            setTimeout(() => {
-                notification.remove();
-            }, 3000);
-        }
-
-        // Logout
+        // ========== Logout ==========
         async function logout() {
-            try {
-                await auth.signOut();
-                localStorage.removeItem('userData');
-                localStorage.removeItem('transactions');
-                window.location.href = 'auth.html';
-            } catch (error) {
-                console.error('Logout error:', error);
-                showNotification(error.message, 'error');
-            }
+            await auth.signOut();
+            localStorage.removeItem('userData');
+            window.location.href = 'login.html';
         }
 
-        // Generate reports
-        function generateMonthlyReport() {
-            showNotification('মাসিক রিপোর্ট তৈরি হচ্ছে...', 'info');
-        }
-
-        function generateYearlyReport() {
-            showNotification('বার্ষিক রিপোর্ট তৈরি হচ্ছে...', 'info');
-        }
-
-        function generateCustomReport() {
-            showNotification('কাস্টম রিপোর্ট তৈরি হচ্ছে...', 'info');
-        }
-
-        // Language toggle
-        function toggleLanguage() {
-            currentLanguage = currentLanguage === 'bn' ? 'en' : 'bn';
-            document.querySelectorAll('[data-en][data-bn]').forEach(element => {
-                element.textContent = element.getAttribute(`data-${currentLanguage}`);
-            });
-            localStorage.setItem('language', currentLanguage);
-        }
-
-        // Initialize
-        document.addEventListener('DOMContentLoaded', () => {
-            // Load language
-            const savedLang = localStorage.getItem('language') || 'bn';
-            currentLanguage = savedLang;
-            document.querySelectorAll('[data-en][data-bn]').forEach(element => {
-                element.textContent = element.getAttribute(`data-${currentLanguage}`);
-            });
-            
-            // Set default date
-            document.getElementById('transactionDate').value = new Date().toISOString().split('T')[0];
-        });
+        // ========== Init ==========
+        loadUserData();
+        loadAllData();
     </script>
 </body>
 </html>
