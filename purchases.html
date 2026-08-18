@@ -1,1 +1,142 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ক্রয় - হিসাবের খাতা</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        :root { --primary: #6366f1; --success: #10b981; --danger: #ef4444; --bg-card: #ffffff; --border-color: #e2e8f0; --shadow: 0 4px 6px -1px rgba(0,0,0,0.1); --radius: 16px; --transition: all 0.3s; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Hind Siliguri', sans-serif; }
+        body { background: #f1f5f9; padding: 20px; }
+        .container { max-width: 1000px; margin: 0 auto; }
+        .card { background: var(--bg-card); border-radius: var(--radius); padding: 20px; margin-bottom: 20px; box-shadow: var(--shadow); }
+        .form-group { margin-bottom: 16px; }
+        .form-group label { display: block; font-weight: 600; margin-bottom: 6px; }
+        .form-group input { width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 10px; }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        .btn { padding: 10px 20px; border: none; border-radius: 12px; font-weight: 600; cursor: pointer; transition: var(--transition); }
+        .btn-success { background: var(--success); color: white; }
+        .btn-danger { background: var(--danger); color: white; }
+        .btn-block { width: 100%; }
+        .table-container { background: var(--bg-card); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); }
+        .data-table { width: 100%; border-collapse: collapse; }
+        .data-table th { background: #f1f5f9; padding: 14px 16px; text-align: left; }
+        .data-table td { padding: 14px 16px; border-bottom: 1px solid var(--border-color); }
+        @media (max-width: 600px) { .form-row { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div style="display: flex; justify-content: space-between; margin-bottom: 16px;">
+            <h2><i class="fas fa-shopping-cart"></i> ক্রয়</h2>
+            <button class="btn btn-primary" onclick="toggleForm()">+ নতুন ক্রয়</button>
+        </div>
 
+        <div id="formContainer" style="display: none;">
+            <div class="card">
+                <h3 style="margin-bottom: 12px;">নতুন ক্রয়</h3>
+                <form id="purchaseForm">
+                    <div class="form-row">
+                        <div class="form-group"><label>পণ্যের নাম</label><input type="text" id="purchaseName" required></div>
+                        <div class="form-group"><label>পরিমাণ</label><input type="number" id="purchaseQty" required min="1"></div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group"><label>ক্রয় মূল্য (প্রতি)</label><input type="number" id="purchasePrice" required min="0"></div>
+                        <div class="form-group"><label>বিক্রয় মূল্য</label><input type="number" id="purchaseSalePrice" required min="0"></div>
+                    </div>
+                    <div class="form-group"><label>সরবরাহকারী</label><input type="text" id="purchaseSupplier"></div>
+                    <button type="submit" class="btn btn-success btn-block">ক্রয় করুন</button>
+                </form>
+            </div>
+        </div>
+
+        <div class="table-container">
+            <table class="data-table">
+                <thead><tr><th>পণ্য</th><th>পরিমাণ</th><th>মূল্য</th><th>মোট</th><th>সময়</th><th>অ্যাকশন</th></tr></thead>
+                <tbody id="purchaseTableBody"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <script src="firebase-config.js"></script>
+    <script src="shared.js"></script>
+    <script>
+        // 🔐 Security Check
+        if (!auth.currentUser) {
+            window.location.href = 'login.html';
+        }
+
+        const uid = auth.currentUser.uid;
+
+        function toggleForm() {
+            const container = document.getElementById('formContainer');
+            container.style.display = container.style.display === 'none' ? 'block' : 'none';
+        }
+
+        // ========== Load Purchases ==========
+        function loadPurchases() {
+            database.ref('purchases/' + uid).on('value', snap => {
+                const purchases = snap.val() || {};
+                const tbody = document.getElementById('purchaseTableBody');
+                const entries = Object.entries(purchases).sort((a,b) => b[1].timestamp - a[1].timestamp);
+                if (!entries.length) {
+                    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;">কোনো ক্রয় নেই</td></tr>';
+                    return;
+                }
+                tbody.innerHTML = entries.map(([id, p]) => `
+                    <tr>
+                        <td><strong>${p.productName}</strong></td>
+                        <td>${p.quantity}</td>
+                        <td>৳${p.purchasePrice}</td>
+                        <td><strong>৳${p.total}</strong></td>
+                        <td>${getBangladeshTime(p.timestamp)}</td>
+                        <td><button class="btn btn-danger btn-sm" onclick="deletePurchase('${id}')"><i class="fas fa-trash"></i></button></td>
+                    </tr>
+                `).join('');
+            });
+        }
+
+        // ========== Submit Purchase ==========
+        document.getElementById('purchaseForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const name = document.getElementById('purchaseName').value;
+            const qty = +document.getElementById('purchaseQty').value;
+            const price = +document.getElementById('purchasePrice').value;
+            const salePrice = +document.getElementById('purchaseSalePrice').value;
+            const supplier = document.getElementById('purchaseSupplier').value;
+            const total = qty * price;
+
+            await database.ref('purchases/' + uid).push().set({
+                productName: name, quantity: qty, purchasePrice: price, salePrice: salePrice,
+                supplier: supplier, total: total, timestamp: firebase.database.ServerValue.TIMESTAMP
+            });
+
+            // Update stock
+            const key = name.toLowerCase().replace(/ /g, '_');
+            const ref = database.ref('products/' + uid + '/' + key);
+            const snap = await ref.once('value');
+            const p = snap.val() || { stock: 0, sold: 0 };
+            await ref.set({
+                name: name, stock: (p.stock || 0) + qty, sold: p.sold || 0,
+                purchasePrice: price, salePrice: salePrice,
+                lastPurchaseDate: firebase.database.ServerValue.TIMESTAMP
+            });
+
+            document.getElementById('purchaseForm').reset();
+            document.getElementById('formContainer').style.display = 'none';
+            showNotification('ক্রয় যোগ হয়েছে', 'success');
+        });
+
+        // ========== Delete Purchase ==========
+        async function deletePurchase(id) {
+            if (!confirm('ডিলিট করবেন?')) return;
+            await database.ref('purchases/' + uid + '/' + id).remove();
+            showNotification('ডিলিট করা হয়েছে', 'success');
+        }
+
+        // ========== Init ==========
+        loadPurchases();
+    </script>
+</body>
+</html>
