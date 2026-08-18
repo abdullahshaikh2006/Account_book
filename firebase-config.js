@@ -1,3 +1,4 @@
+// Firebase Configuration
 const firebaseConfig = {
     apiKey: "AIzaSyB16ZrdZ2IY_R8aSZipz-O6SelEblngJLE",
     authDomain: "marketing-calculation.firebaseapp.com",
@@ -8,6 +9,7 @@ const firebaseConfig = {
     appId: "1:371475369216:web:3aff3d68b707f65c1e77e5"
 };
 
+// Prevent multiple initializations
 if (!firebase.apps.length) {
     firebase.initializeApp(firebaseConfig);
 }
