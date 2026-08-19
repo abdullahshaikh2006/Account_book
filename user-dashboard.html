@@ -4,26 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ইউজার ডেসবোর্ড - হিসাবের খাতা</title>
-    <!-- ... same CSS as before ... -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
     <style>
-        /* Same as previous user-dashboard.html */
-        :root {
-            --primary: #6366f1;
-            --primary-dark: #4f46e5;
-            --secondary: #06b6d4;
-            --success: #10b981;
-            --danger: #ef4444;
-            --warning: #f59e0b;
-            --bg-body: #f1f5f9;
-            --bg-card: #ffffff;
-            --text-primary: #0f172a;
-            --text-secondary: #64748b;
-            --border-color: #e2e8f0;
-            --sidebar-width: 260px;
-            --radius: 16px;
-            --shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
-            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
+        :root { --primary: #6366f1; --primary-dark: #4f46e5; --secondary: #06b6d4; --success: #10b981; --danger: #ef4444; --warning: #f59e0b; --bg-body: #f1f5f9; --bg-card: #ffffff; --text-primary: #0f172a; --text-secondary: #64748b; --border-color: #e2e8f0; --sidebar-width: 260px; --radius: 16px; --shadow: 0 4px 6px -1px rgba(0,0,0,0.1); --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Hind Siliguri', sans-serif; }
         body { background: var(--bg-body); min-height: 100vh; display: flex; overflow-x: hidden; }
         .sidebar { width: var(--sidebar-width); background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%); position: fixed; height: 100vh; padding: 20px 16px; display: flex; flex-direction: column; transition: var(--transition); z-index: 1000; overflow-y: auto; }
@@ -82,11 +68,7 @@
 </head>
 <body>
     <aside class="sidebar" id="sidebar">
-        <div class="sidebar-logo">
-            <i class="fas fa-store-alt"></i>
-            <h3>হিসাবের খাতা</h3>
-            <p id="businessName">ব্যবসা</p>
-        </div>
+        <div class="sidebar-logo"><i class="fas fa-store-alt"></i><h3>হিসাবের খাতা</h3><p id="businessName">ব্যবসা</p></div>
         <nav>
             <a class="nav-link active" data-section="dashboard" onclick="showSection('dashboard')"><i class="fas fa-th-large"></i> ডেসবোর্ড</a>
             <a class="nav-link" data-section="purchases" onclick="loadSection('purchases')"><i class="fas fa-shopping-cart"></i> ক্রয়</a>
@@ -96,21 +78,13 @@
             <a class="nav-link" data-section="reports" onclick="loadSection('reports')"><i class="fas fa-chart-pie"></i> রিপোর্ট</a>
             <a class="nav-link" data-section="profile" onclick="showSection('profile')"><i class="fas fa-user"></i> প্রোফাইল</a>
         </nav>
-        <div class="sidebar-footer">
-            <button class="btn-logout" onclick="logout()"><i class="fas fa-sign-out-alt"></i> লগআউট</button>
-        </div>
+        <div class="sidebar-footer"><button class="btn-logout" onclick="logout()"><i class="fas fa-sign-out-alt"></i> লগআউট</button></div>
     </aside>
 
     <main class="main-content">
         <header class="top-bar">
-            <div style="display: flex; align-items: center; gap: 12px;">
-                <button class="menu-toggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
-                <span class="page-title" id="pageTitle">ডেসবোর্ড</span>
-            </div>
-            <div class="user-info">
-                <div class="user-avatar" id="userAvatar">U</div>
-                <div><div id="userName" style="font-weight: 600;">User</div><div style="font-size: 12px; color: var(--text-secondary);" id="userEmail">user@email.com</div></div>
-            </div>
+            <div><button class="menu-toggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button><span class="page-title" id="pageTitle">ডেসবোর্ড</span></div>
+            <div class="user-info"><div class="user-avatar" id="userAvatar">U</div><div><div id="userName" style="font-weight:600;">User</div><div style="font-size:12px;color:var(--text-secondary);" id="userEmail">user@email.com</div></div></div>
         </header>
 
         <section id="dashboard" class="section active">
@@ -122,15 +96,12 @@
                 <div class="stat-card"><h4>মোট বাকি</h4><p id="totalDue">৳0</p></div>
                 <div class="stat-card"><h4>স্টক ভ্যালু</h4><p id="stockValue">৳0</p></div>
             </div>
-            <div class="card"><h3 style="margin-bottom: 12px;">📊 সাম্প্রতিক লেনদেন</h3><div id="recentTransactions">লোড হচ্ছে...</div></div>
+            <div class="card"><h3 style="margin-bottom:12px;">📊 সাম্প্রতিক লেনদেন</h3><div id="recentTransactions">লোড হচ্ছে...</div></div>
         </section>
 
         <section id="profile" class="section">
-            <div class="card" style="max-width: 500px; margin: 0 auto;">
-                <h2 style="text-align: center; margin-bottom: 20px;">প্রোফাইল</h2>
-                <div style="text-align: center; margin-bottom: 20px;">
-                    <div class="user-avatar" style="width: 80px; height: 80px; font-size: 32px; margin: 0 auto;" id="profileAvatar">U</div>
-                </div>
+            <div class="card" style="max-width:500px;margin:0 auto;"><h2 style="text-align:center;margin-bottom:20px;">প্রোফাইল</h2>
+                <div style="text-align:center;margin-bottom:20px;"><div class="user-avatar" style="width:80px;height:80px;font-size:32px;margin:0 auto;" id="profileAvatar">U</div></div>
                 <div class="form-group"><label>নাম</label><input type="text" id="profileName" disabled></div>
                 <div class="form-group"><label>ইমেইল</label><input type="email" id="profileEmail" disabled></div>
                 <div class="form-group"><label>ব্যবসার নাম</label><input type="text" id="profileBusiness" disabled></div>
@@ -145,24 +116,11 @@
     <script src="firebase-config.js"></script>
     <script src="shared.js"></script>
     <script>
-        // 🔐 Security Check
-        if (!auth.currentUser) {
-            window.location.href = 'login.html';
-        }
-
-        // Prevent redirect loop: if already on user-dashboard, don't redirect
-        if (window.location.pathname.includes('user-dashboard.html') && !auth.currentUser) {
-            window.location.href = 'login.html';
-        }
-
+        if (!auth.currentUser) { window.location.href = 'login.html'; }
+        if (window.location.pathname.includes('user-dashboard.html') && !auth.currentUser) { window.location.href = 'login.html'; }
         const uid = auth.currentUser.uid;
-        let userData = {};
-        let allProducts = {};
-        let allPurchases = {};
-        let allSales = {};
-        let allExpenses = {};
+        let userData = {}, allProducts = {}, allPurchases = {}, allSales = {}, allExpenses = {};
 
-        // ========== Load User Data ==========
         async function loadUserData() {
             const snap = await database.ref('users/' + uid).once('value');
             userData = snap.val() || {};
@@ -176,28 +134,13 @@
             document.getElementById('profileAvatar').textContent = (userData.name || 'U')[0].toUpperCase();
         }
 
-        // ========== Load All Data (Realtime) ==========
         function loadAllData() {
-            database.ref('products/' + uid).on('value', snap => {
-                allProducts = snap.val() || {};
-                updateStats();
-            });
-            database.ref('purchases/' + uid).on('value', snap => {
-                allPurchases = snap.val() || {};
-                updateStats();
-            });
-            database.ref('sales/' + uid).on('value', snap => {
-                allSales = snap.val() || {};
-                updateStats();
-                loadRecentTransactions();
-            });
-            database.ref('expenses/' + uid).on('value', snap => {
-                allExpenses = snap.val() || {};
-                updateStats();
-            });
+            database.ref('products/' + uid).on('value', snap => { allProducts = snap.val() || {}; updateStats(); });
+            database.ref('purchases/' + uid).on('value', snap => { allPurchases = snap.val() || {}; updateStats(); });
+            database.ref('sales/' + uid).on('value', snap => { allSales = snap.val() || {}; updateStats(); loadRecentTransactions(); });
+            database.ref('expenses/' + uid).on('value', snap => { allExpenses = snap.val() || {}; updateStats(); });
         }
 
-        // ========== Section Navigation ==========
         function showSection(id) {
             document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
             document.getElementById(id).classList.add('active');
@@ -223,11 +166,8 @@
             if (window.innerWidth <= 768) document.getElementById('sidebar').classList.remove('active');
         }
 
-        function toggleSidebar() {
-            document.getElementById('sidebar').classList.toggle('active');
-        }
+        function toggleSidebar() { document.getElementById('sidebar').classList.toggle('active'); }
 
-        // ========== Dashboard Stats ==========
         function updateStats() {
             let totalSales = 0, totalPurchases = 0, totalExpenses = 0, totalDue = 0;
             Object.values(allSales).forEach(s => { totalSales += s.total || 0; if (s.payment === 'due') totalDue += s.dueAmount || 0; });
@@ -235,7 +175,6 @@
             Object.values(allExpenses).forEach(e => totalExpenses += e.amount || 0);
             const profit = totalSales - totalPurchases - totalExpenses;
             const stockValue = Object.values(allProducts).reduce((acc, p) => acc + (p.stock || 0) * (p.purchasePrice || 0), 0);
-            
             document.getElementById('totalSales').textContent = '৳' + totalSales.toFixed(2);
             document.getElementById('totalPurchases').textContent = '৳' + totalPurchases.toFixed(2);
             document.getElementById('totalExpenses').textContent = '৳' + totalExpenses.toFixed(2);
@@ -244,7 +183,6 @@
             document.getElementById('stockValue').textContent = '৳' + stockValue.toFixed(2);
         }
 
-        // ========== Recent Transactions ==========
         function loadRecentTransactions() {
             const container = document.getElementById('recentTransactions');
             let html = '';
@@ -255,22 +193,17 @@
             all.sort((a, b) => (b.time || 0) - (a.time || 0));
             const recent = all.slice(0, 10);
             recent.forEach(item => {
-                html += `<div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #e2e8f0;">
-                    <span><strong>${item.type}</strong> - ${item.desc}</span>
-                    <span>৳${item.amount} | ${getBangladeshTime(item.time)}</span>
-                </div>`;
+                html += `<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #e2e8f0;"><span><strong>${item.type}</strong> - ${item.desc}</span><span>৳${item.amount} | ${getBangladeshTime(item.time)}</span></div>`;
             });
             container.innerHTML = html || 'কোনো লেনদেন নেই';
         }
 
-        // ========== Logout ==========
         async function logout() {
             await auth.signOut();
             localStorage.removeItem('userData');
             window.location.href = 'login.html';
         }
 
-        // ========== Init ==========
         loadUserData();
         loadAllData();
     </script>
