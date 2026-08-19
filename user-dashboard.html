@@ -2,157 +2,385 @@
 <html lang="bn">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ইউজার ডেসবোর্ড - হিসাবের খাতা</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>হিসাবের খাতা - ডেসবোর্ড</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
-        /* ===== একেবারে মিনিমালিস্টিক ডিজাইন ===== */
+        /* ===== রুট ভেরিয়েবল ===== */
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --secondary: #06b6d4;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --bg-body: #f1f5f9;
+            --bg-card: #ffffff;
+            --text-primary: #0f172a;
+            --text-secondary: #64748b;
+            --border-color: #e2e8f0;
+            --shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+            --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1);
+            --radius: 16px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* ===== গ্লোবাল স্টাইল ===== */
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Hind Siliguri', sans-serif; }
         body {
-            background: #f1f5f9;
+            background: var(--bg-body);
             min-height: 100vh;
             display: flex;
             flex-direction: column;
+            overflow: hidden;
+            color: var(--text-primary);
+        }
+
+        /* ===== হেডার (সব সময় স্থির) ===== */
+        .app-header {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            padding: 16px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: var(--shadow-lg);
+            min-height: 70px;
+        }
+        .app-header .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .app-header .brand i {
+            font-size: 28px;
+        }
+        .app-header .brand h2 {
+            font-size: 20px;
+            font-weight: 700;
+        }
+        .app-header .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        .app-header .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.2);
+            display: flex;
             align-items: center;
             justify-content: center;
-            padding: 20px;
-        }
-        .dashboard-container {
-            background: #ffffff;
-            border-radius: 20px;
-            padding: 40px;
-            max-width: 700px;
-            width: 100%;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.15);
-            text-align: center;
-        }
-        .dashboard-logo {
-            font-size: 48px;
-            color: #6366f1;
-            margin-bottom: 10px;
-        }
-        h1 {
-            font-size: 28px;
-            color: #1e293b;
-            margin-bottom: 8px;
-        }
-        .subtitle {
-            color: #64748b;
-            margin-bottom: 25px;
-            font-size: 16px;
-        }
-        .menu-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 16px;
-            margin-top: 20px;
-        }
-        .menu-item {
-            background: #f8fafc;
-            border-radius: 16px;
-            padding: 20px 16px;
-            transition: 0.3s ease;
+            font-weight: 700;
+            font-size: 18px;
+            border: 2px solid rgba(255,255,255,0.3);
             cursor: pointer;
-            border: 1px solid #e2e8f0;
-            text-decoration: none;
-            color: #1e293b;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 8px;
         }
-        .menu-item:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 8px 25px rgba(0,0,0,0.08);
-            border-color: #6366f1;
-        }
-        .menu-item i {
-            font-size: 28px;
-            color: #6366f1;
-        }
-        .menu-item span {
-            font-weight: 600;
-            font-size: 15px;
-        }
-        .logout-btn {
-            margin-top: 30px;
-            padding: 12px 30px;
-            background: #ef4444;
-            color: white;
+        .menu-toggle-btn {
+            background: none;
             border: none;
-            border-radius: 12px;
-            font-size: 16px;
-            font-weight: 600;
+            color: white;
+            font-size: 28px;
             cursor: pointer;
-            transition: 0.3s;
+            transition: var(--transition);
+            padding: 4px;
+        }
+        .menu-toggle-btn:hover {
+            transform: rotate(90deg);
+        }
+
+        /* ===== সাইড মেনু (Overlay) ===== */
+        .side-menu-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
             width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 9999;
+            display: none;
+            animation: fadeIn 0.3s ease;
         }
-        .logout-btn:hover {
-            background: #dc2626;
-            transform: translateY(-2px);
+        .side-menu-overlay.open {
+            display: block;
         }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .side-menu {
+            position: fixed;
+            top: 0;
+            left: -280px;
+            width: 280px;
+            height: 100%;
+            background: #ffffff;
+            box-shadow: var(--shadow-lg);
+            z-index: 10000;
+            transition: var(--transition);
+            padding: 20px 16px;
+            overflow-y: auto;
+        }
+        .side-menu.open {
+            left: 0;
+        }
+        .side-menu .menu-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 16px;
+        }
+        .side-menu .menu-header h3 {
+            font-size: 18px;
+            color: var(--text-primary);
+        }
+        .side-menu .menu-header .close-btn {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: var(--text-secondary);
+        }
+        .side-menu .menu-item {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 12px 14px;
+            border-radius: 12px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: var(--transition);
+            cursor: pointer;
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+        .side-menu .menu-item:hover {
+            background: var(--bg-body);
+            color: var(--primary);
+        }
+        .side-menu .menu-item i {
+            width: 24px;
+            text-align: center;
+            font-size: 18px;
+        }
+        .side-menu .menu-item.logout {
+            color: var(--danger);
+            border-top: 1px solid var(--border-color);
+            margin-top: 16px;
+            padding-top: 16px;
+        }
+        .side-menu .menu-item.logout:hover {
+            background: #fee2e2;
+        }
+
+        /* ===== মেইন কন্টেন্ট এরিয়া (হেডারের নিচে) ===== */
+        .main-content {
+            flex: 1;
+            padding: 16px 16px 20px;
+            overflow-y: auto;
+            height: calc(100vh - 70px);
+            background: var(--bg-body);
+        }
+
+        /* ===== লোডিং স্পিনার (যখন ফাইল লোড হবে) ===== */
+        .content-loader {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: var(--text-secondary);
+        }
+        .content-loader .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid var(--border-color);
+            border-top: 4px solid var(--primary);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin-right: 12px;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* ===== রেসপনসিভ ===== */
         @media (max-width: 480px) {
-            .dashboard-container { padding: 30px 20px; }
-            .menu-grid { grid-template-columns: 1fr; }
+            .app-header .brand h2 { font-size: 17px; }
+            .app-header { padding: 12px 16px; }
+            .side-menu { width: 260px; }
         }
     </style>
 </head>
 <body>
 
-    <div class="dashboard-container">
-        <div class="dashboard-logo"><i class="fas fa-store-alt"></i></div>
-        <h1>হিসাবের খাতা</h1>
-        <p class="subtitle">আপনার ব্যবসার সব হিসাব এক জায়গায়</p>
+    <!-- ===== হেডার (সব সময় স্থির) ===== -->
+    <header class="app-header">
+        <div class="brand">
+            <i class="fas fa-store-alt"></i>
+            <h2>হিসাবের খাতা</h2>
+        </div>
+        <div class="header-actions">
+            <div class="user-avatar" id="userAvatar">U</div>
+            <button class="menu-toggle-btn" id="menuToggleBtn">
+                <i class="fas fa-ellipsis-v"></i>
+            </button>
+        </div>
+    </header>
 
-        <!-- ===== মেনু লিংক ===== -->
-        <div class="menu-grid">
-            <a class="menu-item" href="purchases.html">
-                <i class="fas fa-shopping-cart"></i>
-                <span>ক্রয়</span>
-            </a>
-            <a class="menu-item" href="sales.html">
-                <i class="fas fa-cash-register"></i>
-                <span>বিক্রি</span>
-            </a>
-            <a class="menu-item" href="expenses.html">
-                <i class="fas fa-receipt"></i>
-                <span>খরচ</span>
-            </a>
-            <a class="menu-item" href="products.html">
-                <i class="fas fa-boxes"></i>
-                <span>পণ্য/স্টক</span>
-            </a>
-            <a class="menu-item" href="reports.html">
-                <i class="fas fa-chart-pie"></i>
-                <span>রিপোর্ট</span>
-            </a>
-            <a class="menu-item" href="profile.html">
-                <i class="fas fa-user"></i>
-                <span>প্রোফাইল</span>
-            </a>
+    <!-- ===== সাইড মেনু ওভারলে ===== -->
+    <div class="side-menu-overlay" id="sideMenuOverlay"></div>
+
+    <!-- ===== সাইড মেনু (থ্রি-ডট আইকনে ক্লিক করলে আসবে) ===== -->
+    <nav class="side-menu" id="sideMenu">
+        <div class="menu-header">
+            <h3><i class="fas fa-bars" style="margin-right: 8px;"></i> মেনু</h3>
+            <button class="close-btn" id="closeMenuBtn"><i class="fas fa-times"></i></button>
         </div>
 
-        <!-- ===== লগআউট বাটন ===== -->
-        <button class="logout-btn" onclick="logout()">
-            <i class="fas fa-sign-out-alt"></i> লগআউট
-        </button>
-    </div>
+        <!-- মেনু আইটেম (সকল ফাইলের লিংক) -->
+        <a class="menu-item" data-page="dashboard" onclick="loadPage('dashboard')">
+            <i class="fas fa-th-large"></i> ডেসবোর্ড
+        </a>
+        <a class="menu-item" data-page="purchases" onclick="loadPage('purchases')">
+            <i class="fas fa-shopping-cart"></i> ক্রয়
+        </a>
+        <a class="menu-item" data-page="sales" onclick="loadPage('sales')">
+            <i class="fas fa-cash-register"></i> বিক্রি
+        </a>
+        <a class="menu-item" data-page="expenses" onclick="loadPage('expenses')">
+            <i class="fas fa-receipt"></i> খরচ
+        </a>
+        <a class="menu-item" data-page="products" onclick="loadPage('products')">
+            <i class="fas fa-boxes"></i> পণ্য/স্টক
+        </a>
+        <a class="menu-item" data-page="reports" onclick="loadPage('reports')">
+            <i class="fas fa-chart-pie"></i> রিপোর্ট
+        </a>
+        <a class="menu-item" data-page="profile" onclick="loadPage('profile')">
+            <i class="fas fa-user"></i> প্রোফাইল
+        </a>
 
-    <!-- ===== Firebase & Security Scripts ===== -->
+        <!-- লগআউট -->
+        <a class="menu-item logout" onclick="logout()">
+            <i class="fas fa-sign-out-alt"></i> লগআউট
+        </a>
+    </nav>
+
+    <!-- ===== মেইন কন্টেন্ট (হেডারের নিচে ডায়নামিক লোড হবে) ===== -->
+    <main class="main-content" id="mainContent">
+        <div class="content-loader">
+            <div class="spinner"></div>
+            <span>ডেসবোর্ড লোড হচ্ছে...</span>
+        </div>
+    </main>
+
+    <!-- ===== Firebase & Scripts ===== -->
     <script src="firebase-config.js"></script>
     <script>
+        // ==========================================
         // 🔐 সিকিউরিটি চেক — লগইন করা না থাকলে লগইন পেজে পাঠাবে
+        // ==========================================
         if (!auth.currentUser) {
             window.location.href = 'login.html';
         }
 
-        // 🔐 লগআউট ফাংশন
+        // ==========================================
+        // 📌 গ্লোবাল ভেরিয়েবল
+        // ==========================================
+        const uid = auth.currentUser.uid;
+        const mainContent = document.getElementById('mainContent');
+        const sideMenu = document.getElementById('sideMenu');
+        const sideMenuOverlay = document.getElementById('sideMenuOverlay');
+        const menuToggleBtn = document.getElementById('menuToggleBtn');
+        const closeMenuBtn = document.getElementById('closeMenuBtn');
+
+        // ইউজার অ্যাভাটার সেট করা
+        database.ref('users/' + uid).once('value').then(snap => {
+            const data = snap.val();
+            if (data && data.name) {
+                document.getElementById('userAvatar').textContent = data.name.charAt(0).toUpperCase();
+            }
+        });
+
+        // ==========================================
+        // 📌 মেনু টগল ফাংশন (খোলা/বন্ধ)
+        // ==========================================
+        function toggleMenu() {
+            sideMenu.classList.toggle('open');
+            sideMenuOverlay.classList.toggle('open');
+        }
+
+        menuToggleBtn.addEventListener('click', toggleMenu);
+        closeMenuBtn.addEventListener('click', toggleMenu);
+        sideMenuOverlay.addEventListener('click', toggleMenu);
+
+        // ==========================================
+        // 📌 পেজ লোড ফাংশন (AJAX — নতুন ট্যাব ছাড়া)
+        // ==========================================
+        async function loadPage(pageName) {
+            // মেনু বন্ধ করে দিন
+            toggleMenu();
+
+            // লোডিং স্পিনার দেখান
+            mainContent.innerHTML = `
+                <div class="content-loader">
+                    <div class="spinner"></div>
+                    <span>${pageName.charAt(0).toUpperCase() + pageName.slice(1)} লোড হচ্ছে...</span>
+                </div>
+            `;
+
+            try {
+                // ফাইল ফেচ করুন
+                const response = await fetch(pageName + '.html');
+                if (!response.ok) throw new Error('ফাইল পাওয়া যায়নি');
+                const html = await response.text();
+
+                // কন্টেন্ট সেট করুন
+                mainContent.innerHTML = html;
+
+                // স্ক্রিপ্ট রান করানো (যেহেতু innerHTML দিয়ে স্ক্রিপ্ট রান করে না)
+                const scripts = mainContent.querySelectorAll('script');
+                scripts.forEach(script => {
+                    const newScript = document.createElement('script');
+                    newScript.textContent = script.textContent;
+                    document.body.appendChild(newScript);
+                });
+
+            } catch (error) {
+                mainContent.innerHTML = `
+                    <div style="text-align:center;padding:40px;color:#64748b;">
+                        <i class="fas fa-exclamation-circle" style="font-size:40px;margin-bottom:12px;"></i>
+                        <h3>পৃষ্ঠা লোড করতে সমস্যা হয়েছে</h3>
+                        <p>${error.message}</p>
+                        <button onclick="loadPage('dashboard')" style="margin-top:16px;padding:10px 24px;background:#6366f1;color:white;border:none;border-radius:12px;cursor:pointer;">
+                            ডেসবোর্ডে ফিরে যান
+                        </button>
+                    </div>
+                `;
+            }
+        }
+
+        // ==========================================
+        // 📌 লগআউট ফাংশন
+        // ==========================================
         async function logout() {
+            if (!confirm('আপনি কি লগআউট করতে চান?')) return;
             await auth.signOut();
             localStorage.removeItem('userData');
             window.location.href = 'login.html';
         }
-    </script>
 
+        // ==========================================
+        // 📌 ডিফল্ট পেজ লোড (ডেসবোর্ড)
+        // ==========================================
+        loadPage('dashboard');
+    </script>
 </body>
 </html>
